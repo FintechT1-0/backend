@@ -1,0 +1,8 @@
+fastapi==0.120.2
+loguru==0.7.3
+passlib==1.7.4
+pydantic==2.12.3
+pydantic_settings==2.11.0
+PyJWT==2.10.1
+SQLAlchemy==2.0.44
+bcrypt==4.3.0
