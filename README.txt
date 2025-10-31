@@ -1,84 +1,55 @@
-````markdown
-# Server Setup and Launch Instructions
+# Server README
 
 ## Overview
-This repository contains a server application built with **FastAPI**.  
-Follow the steps below to set up and run the server locally.
 
----
+This repository contains a FastAPI-based server application. Follow the instructions below to set up and run the server locally.
 
-## Prerequisites
-Before starting, ensure that you have the following installed on your system:
-- **Python 3.8+**
-- **pip** (Python package manager)
-- **git** (optional, if cloning from a repository)
+## Requirements
 
----
+* Python 3.8 or higher
+* pip (Python package manager)
 
-## Installation and Setup
+## Setup Instructions
 
-### 1. Download the Repository
-Clone the repository using Git or download it manually:
+1. **Download the repository**
+   Clone or download the repository to your local machine.
 
-```bash
-git clone https://github.com/FintechT1-0/backend.git
-````
+   ```bash
+   git clone <repository_url>
+   ```
 
-Alternatively, download the ZIP file and extract it to your desired location.
+   or download the ZIP file and extract it.
 
----
+2. **Install dependencies**
+   Navigate to the project folder and install all required libraries listed in `requirements.txt`.
 
-### 2. Install Dependencies
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Navigate to the repository directory and install all required libraries:
+3. **Run the server**
+   Open the command prompt (cmd) or terminal, navigate to the folder containing the repository, and execute the following command:
 
-```bash
-pip install -r requirements.txt
-```
+   ```bash
+   uvicorn app.main:app
+   ```
 
----
+   By default, the server will start at:
 
-### 3. Launch the Server
+   ```
+   http://127.0.0.1:8000
+   ```
 
-In the command prompt (CMD), navigate to the folder containing the repository:
+4. **Access the documentation**
+   Once the server is running, you can view the automatically generated API documentation at:
 
-```bash
-cd path\to\repository
-```
+   ```
+   http://127.0.0.1:8000/docs
+   ```
 
-Then start the server using **Uvicorn**:
+## Notes
 
-```bash
-uvicorn app.main:app
-```
-
-The server should now be running locally, typically accessible at:
-
-```
-http://127.0.0.1:8000
-```
-
----
-
-## Documentation
-
-API documentation is automatically generated and available at the following endpoint once the server is running:
-
-```
-http://127.0.0.1:8000/docs
-```
-
-This documentation provides detailed information about the available endpoints, request/response formats, and example usage.
-
----
-
-## Troubleshooting
-
-* If dependencies fail to install, ensure you have the correct version of Python and pip.
-* If the port `8000` is already in use, you can specify another port when launching the server:
-
-  ```bash
-  uvicorn app.main:app --port 8080
-  ```
+* Ensure all dependencies are installed before running the server.
+* To stop the server, press `CTRL + C` in the terminal.
 
 ---
