@@ -1,9 +1,13 @@
-fastapi==0.120.2
+app==0.0.1
+fastapi==0.121.0
 loguru==0.7.3
 passlib==1.7.4
 pydantic==2.12.3
 pydantic_settings==2.11.0
 PyJWT==2.10.1
+PyJWT==2.10.1
 SQLAlchemy==2.0.44
-bcrypt==4.3.0
-uvicorn
+psycopg==3.2.12
+psycopg2-binary==2.9.11
+starlette==0.41.3
+uvicorn==0.38.0
