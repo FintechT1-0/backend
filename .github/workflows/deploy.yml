@@ -16,21 +16,21 @@ jobs:
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login ${{ secrets.DOCKER_REGISTRY }} -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
 
       - name: Build and push Docker image
+        id: build
         run: |
           IMAGE=${{ secrets.DOCKER_REGISTRY }}/fastapi-app:$(git rev-parse --short HEAD)
           docker build -t $IMAGE .
           docker push $IMAGE
-          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+          echo "::set-output name=image::$IMAGE"
 
       - name: Deploy to Droplet via SSH
         uses: appleboy/ssh-action@v0.1.10
-        env:
-          IMAGE: ${{ env.IMAGE }}
         with:
           host: ${{ secrets.DROPLET_HOST }}
           username: ${{ secrets.DROPLET_USER }}
           password: ${{ secrets.DROPLET_PASSWORD }}
           script: |
+            IMAGE=${{ steps.build.outputs.image }}
             echo "Using image $IMAGE"
             echo "${{ secrets.DOCKER_PASSWORD }}" | docker login ${{ secrets.DOCKER_REGISTRY }} -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
             docker pull $IMAGE
