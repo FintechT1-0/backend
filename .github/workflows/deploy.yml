@@ -34,13 +34,17 @@ jobs:
             echo "Using image $IMAGE"
             echo "${{ secrets.DOCKER_PASSWORD }}" | docker login ${{ secrets.DOCKER_REGISTRY }} -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
             docker pull $IMAGE
+
+            # Stop and remove old container if it exists
             if [ $(docker ps -aq -f name=fastapi-app) ]; then
               docker stop fastapi-app
               docker rm fastapi-app
             fi
+
+            # Run new container (listen only on localhost)
             docker run -d \
               --name fastapi-app \
-              -p 80:8000 \
+              -p 127.0.0.1:8000:8000 \
               -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
               -e SECRET_KEY=${{ secrets.SECRET_KEY }} \
               -e ALGORITHM=${{ secrets.ALGORITHM }} \
@@ -48,3 +52,9 @@ jobs:
               -e CORS_DEBUG_MODE=${{ secrets.CORS_DEBUG_MODE }} \
               -e TRUSTED_ORIGIN=${{ secrets.TRUSTED_ORIGIN }} \
               $IMAGE
+
+            # Copy Caddyfile from repo to /etc/caddy/Caddyfile
+            sudo cp $GITHUB_WORKSPACE/Caddyfile /etc/caddy/Caddyfile
+
+            # Reload Caddy to apply new config
+            sudo systemctl reload caddy
