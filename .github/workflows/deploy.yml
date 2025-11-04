@@ -21,8 +21,19 @@ jobs:
           IMAGE=${{ secrets.DOCKER_REGISTRY }}/fastapi-app:$(git rev-parse --short HEAD)
           docker build -t $IMAGE .
           docker push $IMAGE
-          echo "::set-output name=image::$IMAGE"
+          echo "image=$IMAGE" >> $GITHUB_OUTPUT
 
+      # Copy Caddyfile to Droplet
+      - name: Copy Caddyfile to Droplet
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          password: ${{ secrets.DROPLET_PASSWORD }}
+          source: "Caddyfile"
+          target: "/etc/caddy/Caddyfile"
+
+      # Deploy Docker container via SSH
       - name: Deploy to Droplet via SSH
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -52,9 +63,6 @@ jobs:
               -e CORS_DEBUG_MODE=${{ secrets.CORS_DEBUG_MODE }} \
               -e TRUSTED_ORIGIN=${{ secrets.TRUSTED_ORIGIN }} \
               $IMAGE
-
-            # Copy Caddyfile from repo to /etc/caddy/Caddyfile
-            sudo cp $GITHUB_WORKSPACE/Caddyfile /etc/caddy/Caddyfile
 
             # Reload Caddy to apply new config
             sudo systemctl reload caddy
