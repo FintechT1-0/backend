@@ -9,12 +9,15 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2. Log in to DigitalOcean Container Registry
       - name: Log in to DigitalOcean Container Registry
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login ${{ secrets.DOCKER_REGISTRY }} -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
 
+      # 3. Build and push Docker image
       - name: Build and push Docker image
         id: build
         run: |
@@ -23,7 +26,7 @@ jobs:
           docker push $IMAGE
           echo "image=$IMAGE" >> $GITHUB_OUTPUT
 
-      # Copy Caddyfile to Droplet
+      # 4. Copy Caddyfile to Droplet (target is folder)
       - name: Copy Caddyfile to Droplet
         uses: appleboy/scp-action@v0.1.4
         with:
@@ -31,9 +34,9 @@ jobs:
           username: ${{ secrets.DROPLET_USER }}
           password: ${{ secrets.DROPLET_PASSWORD }}
           source: "Caddyfile"
-          target: "/etc/caddy/Caddyfile"
+          target: "/etc/caddy/"  # copy INTO directory, keep filename
 
-      # Deploy Docker container via SSH
+      # 5. Deploy Docker container and reload Caddy
       - name: Deploy to Droplet via SSH
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -43,10 +46,12 @@ jobs:
           script: |
             IMAGE=${{ steps.build.outputs.image }}
             echo "Using image $IMAGE"
+
+            # Docker login
             echo "${{ secrets.DOCKER_PASSWORD }}" | docker login ${{ secrets.DOCKER_REGISTRY }} -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
             docker pull $IMAGE
 
-            # Stop and remove old container if it exists
+            # Stop and remove old container if exists
             if [ $(docker ps -aq -f name=fastapi-app) ]; then
               docker stop fastapi-app
               docker rm fastapi-app
@@ -65,4 +70,4 @@ jobs:
               $IMAGE
 
             # Reload Caddy to apply new config
-            sudo systemctl reload caddy
+            systemctl reload caddy
