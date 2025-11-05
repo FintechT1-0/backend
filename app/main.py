@@ -8,6 +8,7 @@ from loguru import logger
 from app.database import Base, engine
 
 from app.auth.routes import auth_router
+from app.courses.routes import course_router
 
 
 Base.metadata.create_all(bind=engine)         
@@ -30,3 +31,4 @@ app.add_middleware(
 
 
 app.include_router(auth_router, prefix="/auth")
+app.include_router(course_router, prefix="/courses")

@@ -58,4 +58,5 @@ jobs:
               -e ACCESS_TOKEN_EXPIRE_MINUTES=${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }} \
               -e CORS_DEBUG_MODE=${{ secrets.CORS_DEBUG_MODE }} \
               -e TRUSTED_ORIGIN=${{ secrets.TRUSTED_ORIGIN }} \
+              -e ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }} \
               $IMAGE
