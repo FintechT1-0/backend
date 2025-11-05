@@ -12,12 +12,13 @@ from app.auth.utils import (
 )
 from app.auth.errors import (
     InvalidCredentials, CredentialsAlreadyTaken, InvalidToken, 
-    ExpiredToken, NonExistentUser
+    ExpiredToken, NonExistentUser, InvalidAdminPassword
 )
 from app.database import get_db
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from loguru import logger
+from app.main import settings
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -39,6 +40,15 @@ def get_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db))
     return user
 
 
+def get_admin(current_user: CurrentUser = Depends(get_user)) -> CurrentUser:
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied."
+        )
+    return current_user
+
+
 def get_user_by_token(token: str, db: Session) -> CurrentUser:
     payload = decode_access_token(token)
     email = payload.get("sub")
@@ -48,7 +58,7 @@ def get_user_by_token(token: str, db: Session) -> CurrentUser:
     if not user:
         raise NonExistentUser
     
-    return CurrentUser(name=user.name, surname=user.surname, email=user.email, id = user.id)
+    return CurrentUser(name=user.name, surname=user.surname, email=user.email, role = user.role, id = user.id)
 
 
 def try_login(db: Session, provided: UserLogin) -> LoginResponse:
@@ -68,15 +78,25 @@ def create_user(db: Session, user: UserCreate) -> UserInfo:
 
     if existing_user:
         raise CredentialsAlreadyTaken
-    
+
+    if user.admin_password:
+        if user.admin_password == settings.ADMIN_PASSWORD:
+            role = "admin"
+        else:
+            raise InvalidAdminPassword
+    else:
+        role = "user"
+
     db_user = User(
-        name = user.name,
-        surname = user.surname,
-        email = user.email,
-        hashed_password = hash_password(user.password)
+        name=user.name,
+        surname=user.surname,
+        email=user.email,
+        hashed_password=hash_password(user.password),
+        role=role
     )
 
     db.add(db_user)
     db.commit()
+    db.refresh(db_user)
 
-    return UserInfo(name=user.name, surname=user.surname, email=user.email)
+    return UserInfo(name=db_user.name, surname=db_user.surname, email=db_user.email, role=db_user.role)

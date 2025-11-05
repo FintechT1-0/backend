@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     CORS_DEBUG_MODE: bool
     TRUSTED_ORIGIN: str
+    ADMIN_PASSWORD: str
 
     class Config:
         env_file = ".env"

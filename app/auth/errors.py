@@ -16,3 +16,7 @@ class InvalidCredentials(Exception):
 
 class CredentialsAlreadyTaken(Exception):
     message = "This email is already in use."
+
+
+class InvalidAdminPassword(Exception):
+    message = "Provided admin password is invalid."

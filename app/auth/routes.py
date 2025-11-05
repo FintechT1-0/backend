@@ -11,7 +11,7 @@ from app.auth.services import (
 )
 from app.database import get_db
 from app.auth.errors import (
-    InvalidCredentials, CredentialsAlreadyTaken
+    InvalidCredentials, CredentialsAlreadyTaken, InvalidAdminPassword
 )
 
 
@@ -40,6 +40,8 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)) -> UserInfo:
         return create_user(db=db, user=user)
     except CredentialsAlreadyTaken as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+    except InvalidAdminPassword as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
 
 
 @auth_router.post("/login")
