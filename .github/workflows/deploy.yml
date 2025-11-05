@@ -26,17 +26,7 @@ jobs:
           docker push $IMAGE
           echo "image=$IMAGE" >> $GITHUB_OUTPUT
 
-      # 4. Copy Caddyfile to Droplet (target is folder)
-      - name: Copy Caddyfile to Droplet
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.DROPLET_HOST }}
-          username: ${{ secrets.DROPLET_USER }}
-          password: ${{ secrets.DROPLET_PASSWORD }}
-          source: "Caddyfile"
-          target: "/etc/caddy/"  # copy INTO directory, keep filename
-
-      # 5. Deploy Docker container and reload Caddy
+      # 4. Deploy Docker container to Droplet
       - name: Deploy to Droplet via SSH
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -57,10 +47,10 @@ jobs:
               docker rm fastapi-app
             fi
 
-            # Run new container (listen only on localhost)
+            # Run new container
             docker run -d \
               --name fastapi-app \
-              -p 127.0.0.1:8000:8000 \
+              -p 80:8000 \
               -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
               -e SECRET_KEY=${{ secrets.SECRET_KEY }} \
               -e ALGORITHM=${{ secrets.ALGORITHM }} \
@@ -68,6 +58,3 @@ jobs:
               -e CORS_DEBUG_MODE=${{ secrets.CORS_DEBUG_MODE }} \
               -e TRUSTED_ORIGIN=${{ secrets.TRUSTED_ORIGIN }} \
               $IMAGE
-
-            # Reload Caddy to apply new config
-            systemctl reload caddy
