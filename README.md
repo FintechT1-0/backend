@@ -41,7 +41,7 @@ This repository contains a FastAPI-based server application. Follow the instruct
    ```
 
 4. **Access the documentation**
-   Once the server is running, you can view the automatically generated API documentation at
+   Once the server is running, you can view the automatically generated API documentation at:
 
    ```
    http://127.0.0.1:8000/docs
