@@ -27,6 +27,7 @@ def admin_create_course(
     course: CourseCreate, 
     db: Session = Depends(get_db), 
     current_user: CurrentUser = Depends(get_admin)) -> Response:
+    """ Creates a new course. """
     create_course(db, course)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -37,6 +38,7 @@ def admin_delete_course(
     course: Course = Depends(get_course_by_id), 
     current_user: CurrentUser = Depends(get_admin),
     db: Session = Depends(get_db)) -> Response:
+    """ Deletes a course by ID. """
     delete_course(db, course)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -48,6 +50,7 @@ def admin_patch_course(
     course: Course = Depends(get_course_by_id),
     current_user: CurrentUser = Depends(get_admin),
     db: Session = Depends(get_db)) -> CourseView:
+    """ Patches (updates) a course by ID. """
     return patch_course(update, course, db)
 
 
@@ -56,6 +59,10 @@ def get_single_course(
     id: int,
     course: Course = Depends(get_course_by_id),
     current_user: CurrentUser = Depends(get_user)) -> CourseView:
+    """
+    Retrieves a single course by ID.
+    Raises HTTP 403 if insufficient rights.
+    """
     try:
         return try_get_course(course, current_user)
     except InsufficientRights as e:
@@ -77,6 +84,10 @@ async def get_multiple_courses(
     db: Session = Depends(get_db), 
     current_user: CurrentUser = Depends(get_user)
 ) -> PaginationInfo:
+    """
+    Retrieves multiple courses with filters and pagination.
+    `tags` should be a comma-separated string.
+    """
     try:
         return filter_courses(
             db, current_user, tags, 
