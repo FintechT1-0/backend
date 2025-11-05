@@ -51,6 +51,7 @@ jobs:
             docker run -d \
               --name fastapi-app \
               -p 80:8000 \
+              -p 443:8000 \
               -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
               -e SECRET_KEY=${{ secrets.SECRET_KEY }} \
               -e ALGORITHM=${{ secrets.ALGORITHM }} \
