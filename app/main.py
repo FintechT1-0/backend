@@ -23,7 +23,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.TRUSTED_ORIGIN if settings.CORS_DEBUG_MODE else "*"],
+    allow_origins=[settings.TRUSTED_ORIGIN if not settings.CORS_DEBUG_MODE else "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
