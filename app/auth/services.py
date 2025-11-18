@@ -56,21 +56,9 @@ async def get_user_by_token(token: str, db: AsyncSession) -> CurrentUser:
     payload = decode_access_token(token)
     email = payload.get("sub")
 
-    t1 = time.perf_counter()
     result = await db.execute(select(User).filter(User.email == email))
-    t2 = time.perf_counter()
     user = result.scalars().first()
-    t3 = time.perf_counter()
 
-    print(f"db query: {t2 - t1}, scalars/fetch: {t3 - t2}")
-
-    '''
-    t0 = time.perf_counter()
-    result = await db.execute(select(User).filter(User.email == email))
-    print("query:", (time.perf_counter() - t0) * 1000, "ms")
-    user = result.scalars().first()
-    '''
-    
     if not user:
         raise NonExistentUser
     
