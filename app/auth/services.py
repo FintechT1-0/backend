@@ -1,4 +1,5 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from app.auth.schemas import (
     UserCreate, UserLogin, CurrentUser, 
     LoginResponse, UserInfo, EmailCheck, 
@@ -14,23 +15,25 @@ from app.auth.errors import (
     InvalidCredentials, CredentialsAlreadyTaken, InvalidToken, 
     ExpiredToken, NonExistentUser, InvalidAdminPassword
 )
-from app.database import get_db
+from app.database import get_async_db
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from loguru import logger
 from app.main import settings
+import time
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-def check_email(data: EmailCheck, db: Session) -> CheckResult:
-    return CheckResult(exists=(True if get_user_by_email(db, data.email) else False))
+async def check_email(data: EmailCheck, db: AsyncSession) -> CheckResult:
+    exists = True if await get_user_by_email(db, data.email) else False
+    return CheckResult(exists=exists)
 
 
-def get_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> CurrentUser:
+async def get_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_async_db)) -> CurrentUser:
     try:
-        user = get_user_by_token(token, db)
+        user = await get_user_by_token(token, db)
         logger.debug(user)
     except (ExpiredToken, InvalidToken) as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.message)
@@ -40,7 +43,7 @@ def get_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db))
     return user
 
 
-def get_admin(current_user: CurrentUser = Depends(get_user)) -> CurrentUser:
+async def get_admin(current_user: CurrentUser = Depends(get_user)) -> CurrentUser:
     if current_user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -49,23 +52,36 @@ def get_admin(current_user: CurrentUser = Depends(get_user)) -> CurrentUser:
     return current_user
 
 
-def get_user_by_token(token: str, db: Session) -> CurrentUser:
+async def get_user_by_token(token: str, db: AsyncSession) -> CurrentUser:
     payload = decode_access_token(token)
     email = payload.get("sub")
 
-    user = db.query(User).filter(User.email == email).first()
+    t1 = time.perf_counter()
+    result = await db.execute(select(User).filter(User.email == email))
+    t2 = time.perf_counter()
+    user = result.scalars().first()
+    t3 = time.perf_counter()
+
+    print(f"db query: {t2 - t1}, scalars/fetch: {t3 - t2}")
+
+    '''
+    t0 = time.perf_counter()
+    result = await db.execute(select(User).filter(User.email == email))
+    print("query:", (time.perf_counter() - t0) * 1000, "ms")
+    user = result.scalars().first()
+    '''
     
     if not user:
         raise NonExistentUser
     
-    return CurrentUser(name=user.name, surname=user.surname, email=user.email, role = user.role, id = user.id)
+    return CurrentUser(name=user.name, surname=user.surname, email=user.email, role=user.role, id=user.id)
 
 
-def try_login(db: Session, provided: UserLogin) -> LoginResponse:
+async def try_login(db: AsyncSession, provided: UserLogin) -> LoginResponse:
     logger.debug(f"Trying to log in, user = {provided}")
-    user = get_user_by_email(db, provided.email)
+    user = await get_user_by_email(db, provided.email)
 
-    if not user or (user and not verify_password(provided.password, user.hashed_password)):
+    if not user or not verify_password(provided.password, user.hashed_password):
         raise InvalidCredentials
     
     access_token = create_access_token(data={"sub": user.email})
@@ -73,8 +89,8 @@ def try_login(db: Session, provided: UserLogin) -> LoginResponse:
     return LoginResponse(token=access_token, user=user)
 
 
-def create_user(db: Session, user: UserCreate) -> UserInfo:
-    existing_user = get_user_by_email(db, user.email)
+async def create_user(db: AsyncSession, user: UserCreate) -> UserInfo:
+    existing_user = await get_user_by_email(db, user.email)
 
     if existing_user:
         raise CredentialsAlreadyTaken
@@ -96,7 +112,7 @@ def create_user(db: Session, user: UserCreate) -> UserInfo:
     )
 
     db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    await db.commit()
+    await db.refresh(db_user)
 
     return UserInfo(name=db_user.name, surname=db_user.surname, email=db_user.email, role=db_user.role)

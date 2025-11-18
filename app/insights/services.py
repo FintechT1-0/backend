@@ -1,6 +1,10 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from app.models import Article
 
 
-def get_filtered_articles(db: Session, lang: str) -> list[Article]:
-    return db.query(Article).filter(Article.lang == lang).all()
+async def get_filtered_articles(db: AsyncSession, lang: str) -> list[Article]:
+    result = await db.execute(
+        select(Article).where(Article.lang == lang)
+    )
+    return result.scalars().all()

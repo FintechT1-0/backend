@@ -1,15 +1,17 @@
-from sqlalchemy.orm import Session
-from sqlalchemy import or_, cast, String
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import or_
 from fastapi import Depends
 from app.models import Course
-from app.database import get_db
+from app.database import get_async_db
 from fastapi import HTTPException
 from typing import Optional
 from loguru import logger
+from sqlalchemy.future import select
 
 
-def get_course_by_id(id: int, db: Session = Depends(get_db)) -> Course:
-    item = db.query(Course).filter(Course.id == id).first()
+async def get_course_by_id(id: int, db: AsyncSession = Depends(get_async_db)) -> Course:
+    result = await db.execute(select(Course).filter(Course.id == id))
+    item = result.scalars().first()
     if item is None:
         raise HTTPException(status_code=404, detail="No course with this id.")
     return item

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status, Response, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.courses.schemas import (
     CourseCreate, CourseUpdate, CourseView,
     PaginationInfo
@@ -7,7 +7,7 @@ from app.courses.schemas import (
 from app.auth.services import (
     get_admin, get_user
 )
-from app.database import get_db
+from app.database import get_async_db
 from app.courses.services import (
     create_course, delete_course, patch_course,
     try_get_course, filter_courses
@@ -16,49 +16,53 @@ from app.auth.schemas import CurrentUser
 from app.models import Course
 from app.courses.utils import get_course_by_id
 from app.courses.errors import InsufficientRights, InsufficientFilterRights
-from typing import Optional, List
+from typing import Optional
 
 
 course_router = APIRouter()
 
 
 @course_router.post("/")
-def admin_create_course(
+async def admin_create_course(
     course: CourseCreate, 
-    db: Session = Depends(get_db), 
-    current_user: CurrentUser = Depends(get_admin)) -> Response:
+    db: AsyncSession = Depends(get_async_db), 
+    current_user: CurrentUser = Depends(get_admin)
+) -> Response:
     """ Creates a new course. """
-    create_course(db, course)
+    await create_course(db, course)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @course_router.delete("/{id}")
-def admin_delete_course(
+async def admin_delete_course(
     id: int, 
     course: Course = Depends(get_course_by_id), 
     current_user: CurrentUser = Depends(get_admin),
-    db: Session = Depends(get_db)) -> Response:
+    db: AsyncSession = Depends(get_async_db)
+) -> Response:
     """ Deletes a course by ID. """
-    delete_course(db, course)
+    await delete_course(db, course)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @course_router.patch("/{id}")
-def admin_patch_course(
+async def admin_patch_course(
     id: int,
     update: CourseUpdate,
     course: Course = Depends(get_course_by_id),
     current_user: CurrentUser = Depends(get_admin),
-    db: Session = Depends(get_db)) -> CourseView:
+    db: AsyncSession = Depends(get_async_db)
+) -> CourseView:
     """ Patches (updates) a course by ID. """
-    return patch_course(update, course, db)
+    return await patch_course(update, course, db)
 
 
 @course_router.get("/{id}")
-def get_single_course(
+async def get_single_course(
     id: int,
     course: Course = Depends(get_course_by_id),
-    current_user: CurrentUser = Depends(get_user)) -> CourseView:
+    current_user: CurrentUser = Depends(get_user)
+) -> CourseView:
     """
     Retrieves a single course by ID.
     Raises HTTP 403 if insufficient rights.
@@ -81,7 +85,7 @@ async def get_multiple_courses(
     isPublished: Optional[bool] = None,
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
-    db: Session = Depends(get_db), 
+    db: AsyncSession = Depends(get_async_db), 
     current_user: CurrentUser = Depends(get_user)
 ) -> PaginationInfo:
     """
@@ -89,7 +93,7 @@ async def get_multiple_courses(
     `tags` should be a comma-separated string.
     """
     try:
-        return filter_courses(
+        return await filter_courses(
             db, current_user, tags, 
             title, description, link, 
             durationText, price_min, price_max, 

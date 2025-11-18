@@ -19,12 +19,14 @@ scheduler = BackgroundScheduler()
 
 
 @app.on_event("startup")
-def start_scheduler():
-    Base.metadata.create_all(bind=engine) 
+async def start_scheduler():
+    async with engine.begin() as conn:  # engine is AsyncEngine
+        await conn.run_sync(Base.metadata.create_all)
+
     scheduler.add_job(collect_news, "interval", minutes=60*24)
     scheduler.start()
 
-    collect_news() # for debugging purposes
+    # collect_news()  # for debugging purposes
 
 
 @app.exception_handler(Exception)

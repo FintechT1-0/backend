@@ -1,11 +1,12 @@
 from bs4 import BeautifulSoup
-from app.database import get_db
+from app.database import get_async_db
 from app.models import Article
 from app.insights.schemas import NewsItem
 from pydantic import ValidationError
 from loguru import logger
 from datetime import datetime
 from app.main import settings
+from sqlalchemy import delete
 import requests
 import re
 
@@ -154,24 +155,26 @@ def get_daily_news_UA():
     return results
 
 
-def delete_all_articles():
-    db = next(get_db())
-    try:
-        db.query(Article).delete()
-        db.commit()
-    finally:
-        db.close()
+async def delete_all_articles():
+    async for db in get_async_db():
+        try:
+            await db.execute(delete(Article))
+            await db.commit()
+        finally:
+            await db.close()
+        break
 
 
-def save_news_items(news_items: list):
-    db = next(get_db())
-    try:
-        for item in news_items:
-            db_item = Article(**item)
-            db.add(db_item)
-        db.commit()
-    finally:
-        db.close()
+async def save_news_items(news_items: list):
+    async for db in get_async_db():
+        try:
+            for item in news_items:
+                db_item = Article(**item)
+                db.add(db_item)
+            await db.commit()
+        finally:
+            await db.close()
+        break
 
 
 def validate_items(raw_items: list[dict]) -> list[NewsItem]:
@@ -183,17 +186,17 @@ def validate_items(raw_items: list[dict]) -> list[NewsItem]:
         except ValidationError:
             continue
     return validated
-    
 
-def collect_news():
+
+async def collect_news():
     logger.debug(f"Trying to collect news at {datetime.utcnow()}")
 
-    delete_all_articles()
+    await delete_all_articles()
 
     validated_EN = validate_items(get_daily_news_EN())
     validated_UA = validate_items(get_daily_news_UA())
 
-    save_news_items(validated_EN + validated_UA)
+    await save_news_items(validated_EN + validated_UA)
 
     
 
