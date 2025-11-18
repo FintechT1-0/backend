@@ -24,6 +24,8 @@ def start_scheduler():
     scheduler.add_job(collect_news, "interval", minutes=60*24)
     scheduler.start()
 
+    collect_news() # for debugging purposes
+
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
