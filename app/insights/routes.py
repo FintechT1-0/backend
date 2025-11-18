@@ -17,5 +17,5 @@ def get_en_news(db: Session = Depends(get_db), current_user: CurrentUser = Depen
 
 
 @insights_router.get("/ua")
-def get_en_news(db: Session = Depends(get_db), current_user: CurrentUser = Depends(get_user)) -> List[NewsItem]:
+def get_ua_news(db: Session = Depends(get_db), current_user: CurrentUser = Depends(get_user)) -> List[NewsItem]:
     return get_filtered_articles(db, "UA")
