@@ -9,8 +9,6 @@ class Settings(BaseSettings):
     CORS_DEBUG_MODE: bool
     TRUSTED_ORIGIN: str
     ADMIN_PASSWORD: str
-    SCRAPER_API_KEY: str
-    SCRAPER_API_URL: str
 
     class Config:
         env_file = ".env"

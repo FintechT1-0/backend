@@ -12,6 +12,4 @@ COPY . .
 
 EXPOSE 8000
 
-RUN apt-get update && apt-get install -y tini
-
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--loop", "uvloop", "--http", "httptools", "--log-level", "warning"]
+CMD ["gunicorn", "app.main:app", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000", "--workers", "5", "--log-level", "warning"]

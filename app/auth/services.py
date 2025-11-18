@@ -33,7 +33,6 @@ async def check_email(data: EmailCheck, db: AsyncSession) -> CheckResult:
 async def get_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_async_db)) -> CurrentUser:
     try:
         user = await get_user_by_token(token, db)
-        logger.debug(user)
     except (ExpiredToken, InvalidToken) as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.message)
     except NonExistentUser as e:

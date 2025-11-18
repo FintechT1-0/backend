@@ -18,3 +18,4 @@ APScheduler==3.11.1
 asyncpg==0.30.0
 uvloop==0.22.1
 httptools==0.7.1
+gunicorn==23.0.0

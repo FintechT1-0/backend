@@ -11,7 +11,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from app.auth.routes import auth_router
 from app.courses.routes import course_router
 from app.insights.routes import insights_router
-from app.insights.utils import collect_news
 
       
 app = FastAPI()
@@ -20,13 +19,8 @@ scheduler = BackgroundScheduler()
 
 @app.on_event("startup")
 async def start_scheduler():
-    async with engine.begin() as conn:  # engine is AsyncEngine
+    async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-
-    scheduler.add_job(collect_news, "interval", minutes=60*24)
-    scheduler.start()
-
-    # collect_news()  # for debugging purposes
 
 
 @app.exception_handler(Exception)
