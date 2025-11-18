@@ -21,7 +21,7 @@ scheduler = BackgroundScheduler()
 @app.on_event("startup")
 def start_scheduler():
     Base.metadata.create_all(bind=engine) 
-    scheduler.add_job(collect_news, "interval", minutes=5)
+    scheduler.add_job(collect_news, "interval", minutes=60*24)
     scheduler.start()
 
 

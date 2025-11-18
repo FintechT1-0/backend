@@ -59,4 +59,6 @@ jobs:
               -e CORS_DEBUG_MODE=${{ secrets.CORS_DEBUG_MODE }} \
               -e TRUSTED_ORIGIN=${{ secrets.TRUSTED_ORIGIN }} \
               -e ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }} \
+              -e SCRAPER_API_KEY=${{ secrets.SCRAPER_API_KEY }} \
+              -e SCRAPER_API_URL=${{ secrets.SCRAPER_API_URL }} \
               $IMAGE

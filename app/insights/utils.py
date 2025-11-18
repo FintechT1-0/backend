@@ -1,32 +1,24 @@
-from app.insights.config import USER_AGENTS
 from bs4 import BeautifulSoup
 from app.database import get_db
-from sqlalchemy.orm import Session
 from app.models import Article
 from app.insights.schemas import NewsItem
 from pydantic import ValidationError
 from loguru import logger
 from datetime import datetime
-import random
+from app.main import settings
 import requests
 import re
 
 
-def make_headers():
-    return {
-        "User-Agent": random.choice(USER_AGENTS),
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Cache-Control": "no-cache",
-        "Pragma": "no-cache",
-        "DNT": "1"
+def send_request(url: str, retry_times: int = 5) -> str:
+    payload = {
+        'api_key': settings.SCRAPER_API_KEY,
+        'url': url
     }
 
-
-def send_request(url: str, retry_times: int = 5) -> str:
     for _ in range(retry_times):
         try:
-            resp = requests.get(url, headers=make_headers(), timeout=15)
+            resp = requests.get(settings.SCRAPER_API_URL, params=payload, timeout=15)
             resp.raise_for_status()
             return resp.text
         except requests.RequestException as e:
