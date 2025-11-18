@@ -6,13 +6,22 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
 from app.database import Base, engine
+from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.auth.routes import auth_router
 from app.courses.routes import course_router
+from app.insights.utils import collect_news
 
-
-Base.metadata.create_all(bind=engine)         
+      
 app = FastAPI()
+scheduler = BackgroundScheduler()
+
+
+@app.on_event("startup")
+def start_scheduler():
+    Base.metadata.create_all(bind=engine) 
+    scheduler.add_job(collect_news, "interval", minutes=1)
+    scheduler.start()
 
 
 @app.exception_handler(Exception)

@@ -1,8 +1,21 @@
-from sqlalchemy import Column, Integer, String, JSON, Float, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, JSON, Float, Boolean, DateTime, Text
 from app.database import Base
 from datetime import datetime
 from sqlalchemy.dialects.postgresql import ARRAY
 
+
+class Article(Base):
+    __tablename__ = "articles"
+
+    id = Column(Integer, primary_key=True, index=True)
+    url = Column(String, nullable=False)
+    thumbnail = Column(String, nullable=False)
+    image = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    date = Column(String, nullable=False)
+    excerpt = Column(Text, nullable=False)
+    lang = Column(String, nullable=False)
 
 
 class User(Base):
