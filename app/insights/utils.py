@@ -61,7 +61,7 @@ def extract_article_content_EN(url: str) -> str:
 
 
 def get_daily_news_EN():
-    html = send_request("https://fintech.global")
+    html = send_request(f"https://fintech.global/{str(datetime.utcnow().year)}")
     soup = BeautifulSoup(html, "html.parser")
 
     modules = soup.find_all("div", class_=re.compile(r"td_module"), limit=10)
@@ -180,6 +180,7 @@ def save_news_items(news_items: list):
         db.commit()
     finally:
         db.close()
+
 
 def validate_items(raw_items: list[dict]) -> list[NewsItem]:
     validated = []

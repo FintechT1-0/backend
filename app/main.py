@@ -10,6 +10,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.auth.routes import auth_router
 from app.courses.routes import course_router
+from app.insights.routes import insights_router
 from app.insights.utils import collect_news
 
       
@@ -20,7 +21,7 @@ scheduler = BackgroundScheduler()
 @app.on_event("startup")
 def start_scheduler():
     Base.metadata.create_all(bind=engine) 
-    scheduler.add_job(collect_news, "interval", minutes=1)
+    scheduler.add_job(collect_news, "interval", minutes=60)
     scheduler.start()
 
 
@@ -41,3 +42,4 @@ app.add_middleware(
 
 app.include_router(auth_router, prefix="/auth")
 app.include_router(course_router, prefix="/courses")
+app.include_router(insights_router, prefix="/insights")
