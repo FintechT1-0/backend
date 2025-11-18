@@ -5,7 +5,9 @@ from app.main import settings
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=False,
-    future=True
+    future=True,
+    pool_size=8,
+    max_overflow=0
 )
 
 AsyncSessionLocal = sessionmaker(
