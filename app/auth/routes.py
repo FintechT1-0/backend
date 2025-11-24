@@ -18,21 +18,25 @@ from app.auth.errors import (
 auth_router = APIRouter()
 
 
-@auth_router.post("/checkEmail")
+@auth_router.post("/checkEmail", tags=["Registration"])
 async def check_existing_email(data: EmailCheck, db: AsyncSession = Depends(get_async_db)) -> CheckResult:
     """Check if an email is already registered."""
 
     return await check_email(data, db)
 
 
-@auth_router.get("/me")
+@auth_router.get("/me", tags=["Info"])
 async def get_me(current_user: CurrentUser = Depends(get_user)) -> UserInfo:
     """Retrieve the currently authenticated user by token."""
 
     return current_user
 
 
-@auth_router.post("/register")
+@auth_router.post("/register", tags=["Registration"],
+                  responses={
+                      400: { "description": "Credentials are alredy taken" },
+                      403: { "description": "Invalid admin password (if specified)" }
+                  })
 async def register_user(user: UserCreate, db: AsyncSession = Depends(get_async_db)) -> UserInfo:
     """Register a new user."""
 
@@ -44,7 +48,10 @@ async def register_user(user: UserCreate, db: AsyncSession = Depends(get_async_d
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
 
 
-@auth_router.post("/login")
+@auth_router.post("/login", tags=["Login"],
+                  responses={
+                      400: { "description": "Invalid credentials" }
+                  })
 async def login(user: UserLogin, db: AsyncSession = Depends(get_async_db)) -> LoginResponse:
     """Authenticate a user and return a login response."""
 

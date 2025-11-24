@@ -22,7 +22,7 @@ from typing import Optional
 course_router = APIRouter()
 
 
-@course_router.post("/")
+@course_router.post("/", tags=["Courses", "Admin"])
 async def admin_create_course(
     course: CourseCreate, 
     db: AsyncSession = Depends(get_async_db), 
@@ -33,7 +33,7 @@ async def admin_create_course(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@course_router.delete("/{id}")
+@course_router.delete("/{id}", tags=["Courses", "Admin"])
 async def admin_delete_course(
     id: int, 
     course: Course = Depends(get_course_by_id), 
@@ -45,7 +45,7 @@ async def admin_delete_course(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@course_router.patch("/{id}")
+@course_router.patch("/{id}", tags=["Courses", "Admin"])
 async def admin_patch_course(
     id: int,
     update: CourseUpdate,
@@ -57,7 +57,10 @@ async def admin_patch_course(
     return await patch_course(update, course, db)
 
 
-@course_router.get("/{id}")
+@course_router.get("/{id}", tags=["Courses"],
+                   responses={
+                       403: { "description": "Insufficient rights to retrieve the course" }
+                   })
 async def get_single_course(
     id: int,
     course: Course = Depends(get_course_by_id),
@@ -73,7 +76,10 @@ async def get_single_course(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
 
 
-@course_router.get("/")
+@course_router.get("/", tags=["Courses"],
+                   responses={
+                       403: { "description": "Insufficient rights to apply particular filters" }
+                   })
 async def get_multiple_courses(
     tags: Optional[str] = None,
     title: Optional[str] = None,
