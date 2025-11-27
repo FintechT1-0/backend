@@ -30,8 +30,8 @@ class UserLogin(BaseModel):
 
 
 class UserCreate(BaseModel):
-    name: str = Field(min_length=1, max_length=40, pattern=r'^[A-Z][a-z]{0,39}$')
-    surname: str = Field(min_length=1, max_length=40, pattern=r'^[A-Z][a-z]{0,39}$')
+    name: str = Field(min_length=1, max_length=40, pattern=r"^[A-ZА-ЯІЇЄҐ][A-Za-zА-Яа-яІіЇїЄєҐґ\-']{0,39}$")
+    surname: str = Field(min_length=1, max_length=40, pattern=r"^[A-ZА-ЯІЇЄҐ][A-Za-zА-Яа-яІіЇїЄєҐґ\-']{0,39}$")
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=128)
     admin_password: Optional[str] = None
