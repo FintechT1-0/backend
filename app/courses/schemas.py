@@ -3,7 +3,8 @@ from typing import List, Optional
 from datetime import datetime
 
 
-url_pattern = r'^(https?://)?(www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}(/[-a-zA-Z0-9%_&?=]*)?$'
+url_pattern = r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)"
+
 
 
 def tags_validator(tags: List[str]) -> List[str]:
