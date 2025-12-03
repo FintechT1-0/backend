@@ -36,9 +36,20 @@ class LangField(BaseModel):
         return v
 
 
+class LongLangField(BaseModel):
+    ua: str = Field(None, max_length=2048)
+    en: str = Field(None, max_length=2048)
+
+    @validator('*', pre=True, always=True)
+    def not_empty(cls, v):
+        if v is not None and not v.strip():
+            raise ValueError("This field cannot be empty")
+        return v
+
+
 class CourseCreate(BaseModel):
     title: LangField
-    description: LangField
+    description: LongLangField
     link: str = Field(..., pattern=url_pattern)
     durationText: str = Field(..., min_length=1, max_length=64)
     price: float = Field(..., ge=0)
