@@ -5,7 +5,6 @@ from app.models import Course
 from app.database import get_async_db
 from fastapi import HTTPException
 from typing import Optional
-from loguru import logger
 from sqlalchemy.future import select
 
 
@@ -40,14 +39,14 @@ def build_course_filters(
     add_filter(Course.tags.overlap(tags) if tags else None)
     add_filter(
         or_(
-            Course.title.op('->>')('ua').ilike(f"%{title}%") if title else None,
-            Course.title.op('->>')('en').ilike(f"%{title}%") if title else None
+            Course.title.op('->>')('ua').ilike(f"%{title}%"),
+            Course.title.op('->>')('en').ilike(f"%{title}%")
         ) if title else None
     )
     add_filter(
         or_(
-            Course.description.op('->>')('ua').ilike(f"%{description}%") if description else None,
-            Course.description.op('->>')('en').ilike(f"%{description}%") if description else None
+            Course.description.op('->>')('ua').ilike(f"%{description}%"),
+            Course.description.op('->>')('en').ilike(f"%{description}%")
         ) if description else None
     )
     add_filter(Course.link.ilike(f"%{link}%") if link else None)

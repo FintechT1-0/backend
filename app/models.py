@@ -16,6 +16,7 @@ class Article(Base):
     date = Column(String, nullable=False)
     excerpt = Column(Text, nullable=False)
     lang = Column(String, nullable=False)
+    category = Column(String, nullable=False)
 
 
 class User(Base):
@@ -39,6 +40,6 @@ class Course(Base):
     durationText = Column(String, nullable=False)
     price = Column(Float, nullable=False)
     tags = Column(ARRAY(String), nullable=False)
-    isPublished = Column(Boolean, default=False)
-    createdAt = Column(DateTime, default=datetime.utcnow)
-    updatedAt = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    isPublished = Column(Boolean, default=False, nullable=False)
+    createdAt = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updatedAt = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
