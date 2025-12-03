@@ -34,8 +34,9 @@ class Course(Base):
     __tablename__ = "courses"
 
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(JSON, nullable=False)
-    description = Column(JSON, nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(String, nullable=False)
+    lang = Column(String, nullable=False)
     link = Column(String, nullable=False)
     durationText = Column(String, nullable=False)
     price = Column(Float, nullable=False)

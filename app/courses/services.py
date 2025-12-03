@@ -46,6 +46,7 @@ async def filter_courses(
     db: AsyncSession, 
     current_user: CurrentUser,
     tags: Optional[str] = None,
+    lang: Optional[str] = None,
     title: Optional[str] = None,
     description: Optional[str] = None,
     link: Optional[str] = None,
@@ -59,7 +60,7 @@ async def filter_courses(
     if current_user.role != "admin" and isPublished != None:
         raise InsufficientFilterRights
 
-    filters = build_course_filters(tags, title, description, link, durationText, price_min, price_max, isPublished)
+    filters = build_course_filters(lang, tags, title, description, link, durationText, price_min, price_max, isPublished)
 
     query = select(Course).filter(*filters)
 

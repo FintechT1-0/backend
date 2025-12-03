@@ -16,7 +16,7 @@ from app.auth.schemas import CurrentUser
 from app.models import Course
 from app.courses.utils import get_course_by_id
 from app.courses.errors import InsufficientRights, InsufficientFilterRights
-from typing import Optional
+from typing import Optional, List
 
 
 course_router = APIRouter()
@@ -81,7 +81,8 @@ async def get_single_course(
                        403: { "description": "Insufficient rights to apply particular filters" }
                    })
 async def get_multiple_courses(
-    tags: Optional[str] = None,
+    tags: Optional[List[str]] = Query(None),
+    lang: Optional[str] = None,
     title: Optional[str] = None,
     description: Optional[str] = None,
     link: Optional[str] = None,
@@ -97,13 +98,17 @@ async def get_multiple_courses(
     """
     Retrieves multiple courses with filters and pagination.
     `tags` should be a comma-separated string.
+
+    To send an array of query parameters, use following syntax:
+    http://127.0.0.1:8000/courses/?tags=AI for Fintech&tags=Fintech, Digital Finance %26 Virtual Assets
     """
     try:
         return await filter_courses(
-            db, current_user, tags, 
-            title, description, link, 
-            durationText, price_min, price_max, 
-            isPublished, page, page_size
+            db, current_user, tags,
+            lang, title, description, 
+            link, durationText, price_min, 
+            price_max, isPublished, page, 
+            page_size
         )
     except InsufficientFilterRights as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)

@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field, HttpUrl, validator
-from typing import List, Optional
+from pydantic import BaseModel, Field, validator
+from typing import List, Optional, Literal
 from datetime import datetime
 
 
@@ -49,13 +49,14 @@ class LongLangField(BaseModel):
 
 
 class CourseCreate(BaseModel):
-    title: LangField
-    description: LongLangField
+    title: str = Field(..., max_length=256)
+    description: str = Field(..., max_length=2048)
     link: str = Field(..., pattern=url_pattern)
     durationText: str = Field(..., min_length=1, max_length=64)
     price: float = Field(..., ge=0)
     tags: List[str] = Field(default_factory=list)
     isPublished: bool = False
+    lang: Literal["EN", "UA"]
 
     @validator('tags', pre=True, always=True)
     def validate_tags(cls, v):

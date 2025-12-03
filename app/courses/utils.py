@@ -4,8 +4,9 @@ from fastapi import Depends
 from app.models import Course
 from app.database import get_async_db
 from fastapi import HTTPException
-from typing import Optional
+from typing import Optional, List
 from sqlalchemy.future import select
+from loguru import logger
 
 
 async def get_course_by_id(id: int, db: AsyncSession = Depends(get_async_db)) -> Course:
@@ -17,7 +18,8 @@ async def get_course_by_id(id: int, db: AsyncSession = Depends(get_async_db)) ->
 
 
 def build_course_filters(
-    tags: Optional[str],
+    lang: Optional[str],
+    tags: Optional[List[str]],
     title: Optional[str],
     description: Optional[str],
     link: Optional[str],
@@ -32,23 +34,15 @@ def build_course_filters(
             filters.append(condition)
 
     filters = []
-    
-    if tags is not None:
-        tags = tags.split(',')
+
+    if tags:
+        tags = [item.lower() for item in tags]
+        logger.debug(f"Received tags: {tags}")
 
     add_filter(Course.tags.overlap(tags) if tags else None)
-    add_filter(
-        or_(
-            Course.title.op('->>')('ua').ilike(f"%{title}%"),
-            Course.title.op('->>')('en').ilike(f"%{title}%")
-        ) if title else None
-    )
-    add_filter(
-        or_(
-            Course.description.op('->>')('ua').ilike(f"%{description}%"),
-            Course.description.op('->>')('en').ilike(f"%{description}%")
-        ) if description else None
-    )
+    add_filter(Course.title.ilike(f"%{title}%") if title else None)
+    add_filter(Course.description.ilike(f"%{description}%") if description else None)
+    add_filter(Course.lang.ilike(f"%{lang}%") if lang else None)
     add_filter(Course.link.ilike(f"%{link}%") if link else None)
     add_filter(Course.durationText.ilike(f"%{durationText}%") if durationText else None)
     add_filter(Course.price >= price_min if price_min is not None else None)
