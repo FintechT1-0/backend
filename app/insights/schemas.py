@@ -9,6 +9,7 @@ class NewsItem(BaseModel):
     date: str
     excerpt: str
     lang: str
+    category: str
 
     class Config:
         from_attributes = True
