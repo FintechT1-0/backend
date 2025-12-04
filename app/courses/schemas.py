@@ -6,7 +6,6 @@ from datetime import datetime
 url_pattern = r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)"
 
 
-
 def tags_validator(tags: List[str]) -> List[str]:
     if tags is not None:
         normalized_tags = [tag.strip().lower() for tag in tags]
@@ -26,33 +25,11 @@ def tags_validator(tags: List[str]) -> List[str]:
     return tags
 
 
-class LangField(BaseModel):
-    ua: str = Field(None, max_length=256)
-    en: str = Field(None, max_length=256)
-
-    @validator('*', pre=True, always=True)
-    def not_empty(cls, v):
-        if v is not None and not v.strip():
-            raise ValueError("This field cannot be empty")
-        return v
-
-
-class LongLangField(BaseModel):
-    ua: str = Field(None, max_length=2048)
-    en: str = Field(None, max_length=2048)
-
-    @validator('*', pre=True, always=True)
-    def not_empty(cls, v):
-        if v is not None and not v.strip():
-            raise ValueError("This field cannot be empty")
-        return v
-
-
 class CourseCreate(BaseModel):
     title: str = Field(..., max_length=256)
     description: str = Field(..., max_length=2048)
     link: str = Field(..., pattern=url_pattern)
-    durationText: str = Field(..., min_length=1, max_length=64)
+    durationText: str = Field(..., min_length=0, max_length=64)
     price: float = Field(..., ge=0)
     tags: List[str] = Field(default_factory=list)
     isPublished: bool = False
@@ -64,13 +41,14 @@ class CourseCreate(BaseModel):
 
 
 class CourseUpdate(BaseModel):
-    title: Optional[LangField] = None
-    description: Optional[LangField] = None
+    title: Optional[str] = Field(None, max_length=256)
+    description: Optional[str] = Field(None, max_length=2048)
     link: Optional[str] = Field(None, pattern=url_pattern)
-    durationText: Optional[str] = Field(None, min_length=1, max_length=64)
+    durationText: Optional[str] = Field(None, min_length=0, max_length=64)
     price: Optional[float] = Field(None, ge=0)
     tags: Optional[List[str]] = None
     isPublished: Optional[bool] = None
+    lang: Optional[Literal["EN", "UA"]] = None
 
     @validator('tags', pre=True, always=True)
     def validate_tags(cls, v):
