@@ -6,7 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
 from app.database import Base, engine
-from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.auth.routes import auth_router
 from app.courses.routes import course_router
@@ -14,11 +13,10 @@ from app.insights.routes import insights_router
 
       
 app = FastAPI()
-scheduler = BackgroundScheduler()
 
 
 @app.on_event("startup")
-async def start_scheduler():
+async def create_tables():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
