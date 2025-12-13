@@ -13,7 +13,7 @@ from typing import Optional
 
 
 async def create_course(db: AsyncSession, course: CourseCreate):
-    db_course = Course(**course.dict())
+    db_course = Course(**course.model_dump())
     db.add(db_course)
     await db.commit()
 
@@ -24,7 +24,7 @@ async def delete_course(db: AsyncSession, course: Course):
 
 
 async def patch_course(course_update: CourseUpdate, course: Course, db: AsyncSession) -> CourseView:
-    for field_name, field_value in course_update.dict(exclude_unset=True).items():
+    for field_name, field_value in course_update.model_dump(exclude_unset=True).items():
         setattr(course, field_name, field_value)
 
     course.updatedAt = datetime.utcnow()

@@ -1,9 +1,6 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, HttpUrl
 from typing import List, Optional, Literal
 from datetime import datetime
-
-
-url_pattern = r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)"
 
 
 def tags_validator(tags: List[str]) -> List[str]:
@@ -28,7 +25,7 @@ def tags_validator(tags: List[str]) -> List[str]:
 class CourseCreate(BaseModel):
     title: str = Field(..., max_length=256)
     description: str = Field(..., max_length=2048)
-    link: str = Field(..., pattern=url_pattern)
+    link: HttpUrl
     durationText: str = Field(..., min_length=0, max_length=64)
     price: float = Field(..., ge=0)
     tags: List[str] = Field(default_factory=list)
@@ -43,7 +40,7 @@ class CourseCreate(BaseModel):
 class CourseUpdate(BaseModel):
     title: Optional[str] = Field(None, max_length=256)
     description: Optional[str] = Field(None, max_length=2048)
-    link: Optional[str] = Field(None, pattern=url_pattern)
+    link: Optional[HttpUrl]
     durationText: Optional[str] = Field(None, min_length=0, max_length=64)
     price: Optional[float] = Field(None, ge=0)
     tags: Optional[List[str]] = None
