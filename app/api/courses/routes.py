@@ -1,21 +1,21 @@
 from fastapi import APIRouter, Depends, status, Response, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.courses.schemas import (
+from app.api.courses.schemas import (
     CourseCreate, CourseUpdate, CourseView,
     PaginationInfo
 )
-from app.auth.services import (
+from app.api.auth.services import (
     get_admin, get_user
 )
 from app.database import get_async_db
-from app.courses.services import (
+from app.api.courses.services import (
     create_course, delete_course, patch_course,
     try_get_course, filter_courses
 )
-from app.auth.schemas import CurrentUser
+from app.api.auth.schemas import CurrentUser
 from app.models import Course
-from app.courses.utils import get_course_by_id
-from app.courses.errors import InsufficientRights, InsufficientFilterRights
+from app.api.courses.utils import get_course_by_id
+from app.api.courses.errors import InsufficientRights, InsufficientFilterRights
 from typing import Optional, List
 
 

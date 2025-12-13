@@ -1,17 +1,17 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from app.auth.schemas import (
+from app.api.auth.schemas import (
     UserCreate, UserLogin, CurrentUser, 
     LoginResponse, UserInfo, EmailCheck, 
     CheckResult
 )
-from app.auth.utils import hash_password
+from app.api.auth.utils import hash_password
 from app.models import User
-from app.auth.utils import (
+from app.api.auth.utils import (
     verify_password, create_access_token, decode_access_token, 
     get_user_by_email
 )
-from app.auth.errors import (
+from app.api.auth.errors import (
     InvalidCredentials, CredentialsAlreadyTaken, InvalidToken, 
     ExpiredToken, NonExistentUser, InvalidAdminPassword
 )

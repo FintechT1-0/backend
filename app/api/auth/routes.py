@@ -1,16 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.auth.schemas import (
+from app.api.auth.schemas import (
     CurrentUser, UserLogin, UserCreate, 
     UserInfo, LoginResponse, EmailCheck, 
     CheckResult
 )
-from app.auth.services import (
+from app.api.auth.services import (
     get_user, try_login, create_user, 
     check_email
 )
 from app.database import get_async_db
-from app.auth.errors import (
+from app.api.auth.errors import (
     InvalidCredentials, CredentialsAlreadyTaken, InvalidAdminPassword
 )
 

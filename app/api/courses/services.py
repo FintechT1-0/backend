@@ -1,14 +1,14 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from app.courses.schemas import (
+from app.api.courses.schemas import (
     CourseCreate, CourseUpdate, CourseView,
     PaginationInfo
 )
 from app.models import Course
 from datetime import datetime
-from app.auth.schemas import CurrentUser
-from app.courses.errors import InsufficientRights, InsufficientFilterRights
-from app.courses.utils import build_course_filters
+from app.api.auth.schemas import CurrentUser
+from app.api.courses.errors import InsufficientRights, InsufficientFilterRights
+from app.api.courses.utils import build_course_filters
 from typing import Optional
 
 

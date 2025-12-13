@@ -1,6 +1,6 @@
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
-from app.auth.errors import ExpiredToken, InvalidToken
+from app.api.auth.errors import ExpiredToken, InvalidToken
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.models import User

@@ -7,9 +7,9 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 from app.database import Base, engine
 
-from app.auth.routes import auth_router
-from app.courses.routes import course_router
-from app.insights.routes import insights_router
+from app.api.auth.routes import auth_router
+from app.api.courses.routes import course_router
+from app.api.insights.routes import insights_router
 
       
 app = FastAPI()
