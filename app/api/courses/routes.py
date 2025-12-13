@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, status, Response, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.courses.schemas import (
     CourseCreate, CourseUpdate, CourseView,
-    PaginationInfo
+    PaginationInfo, CourseId
 )
 from app.api.auth.services import (
     get_admin, get_user
@@ -32,10 +32,9 @@ async def admin_create_course(
     course: CourseCreate, 
     db: AsyncSession = Depends(get_async_db), 
     current_user: CurrentUser = Depends(get_admin)
-) -> Response:
+) -> CourseId:
     """ Creates a new course. """
-    await create_course(db, course)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return await create_course(db, course)
 
 
 @course_router.delete("/{id}", tags=["Courses", "Admin"],

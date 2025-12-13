@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.api.courses.schemas import (
     CourseCreate, CourseUpdate, CourseView,
-    PaginationInfo
+    PaginationInfo, CourseId
 )
 from app.models import Course
 from datetime import datetime
@@ -12,10 +12,12 @@ from app.api.courses.utils import build_course_filters
 from typing import Optional
 
 
-async def create_course(db: AsyncSession, course: CourseCreate):
-    db_course = Course(**course.model_dump())
+async def create_course(db: AsyncSession, course: CourseCreate) -> CourseId:
+    db_course = Course(**course.model_dump(mode="json"))
     db.add(db_course)
     await db.commit()
+    await db.refresh(db_course)
+    return CourseId(id=db_course.id)
 
 
 async def delete_course(db: AsyncSession, course: Course):
@@ -24,7 +26,7 @@ async def delete_course(db: AsyncSession, course: Course):
 
 
 async def patch_course(course_update: CourseUpdate, course: Course, db: AsyncSession) -> CourseView:
-    for field_name, field_value in course_update.model_dump(exclude_unset=True).items():
+    for field_name, field_value in course_update.model_dump(exclude_unset=True, mode="json").items():
         setattr(course, field_name, field_value)
 
     course.updatedAt = datetime.utcnow()

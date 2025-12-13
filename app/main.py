@@ -1,6 +1,4 @@
-from app.environment import Settings
-settings = Settings()
-
+from app.environment import settings
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse

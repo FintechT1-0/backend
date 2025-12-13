@@ -67,3 +67,7 @@ class PaginationInfo(BaseModel):
     page_size: int
     total_courses: int
     total_pages: int
+
+
+class CourseId(BaseModel):
+    id: int
