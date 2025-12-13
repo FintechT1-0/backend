@@ -13,6 +13,7 @@ from app.database import get_async_db
 from app.api.auth.errors import (
     InvalidCredentials, CredentialsAlreadyTaken, InvalidAdminPassword
 )
+from app.docs import user_required
 
 
 auth_router = APIRouter()
@@ -25,7 +26,10 @@ async def check_existing_email(data: EmailCheck, db: AsyncSession = Depends(get_
     return await check_email(data, db)
 
 
-@auth_router.get("/me", tags=["Info"])
+@auth_router.get("/me", tags=["Info"],
+                 responses={
+                     **user_required
+                 })
 async def get_me(current_user: CurrentUser = Depends(get_user)) -> UserInfo:
     """Retrieve the currently authenticated user by token."""
 
@@ -34,8 +38,8 @@ async def get_me(current_user: CurrentUser = Depends(get_user)) -> UserInfo:
 
 @auth_router.post("/register", tags=["Registration"],
                   responses={
-                      400: { "description": "Credentials are alredy taken" },
-                      403: { "description": "Invalid admin password (if specified)" }
+                      400: { "description": CredentialsAlreadyTaken.message },
+                      403: { "description": InvalidAdminPassword.message }
                   })
 async def register_user(user: UserCreate, db: AsyncSession = Depends(get_async_db)) -> UserInfo:
     """Register a new user."""
@@ -50,7 +54,7 @@ async def register_user(user: UserCreate, db: AsyncSession = Depends(get_async_d
 
 @auth_router.post("/login", tags=["Login"],
                   responses={
-                      400: { "description": "Invalid credentials" }
+                      400: { "description": InvalidCredentials.message }
                   })
 async def login(user: UserLogin, db: AsyncSession = Depends(get_async_db)) -> LoginResponse:
     """Authenticate a user and return a login response."""

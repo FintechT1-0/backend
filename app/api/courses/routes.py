@@ -17,12 +17,17 @@ from app.models import Course
 from app.api.courses.utils import get_course_by_id
 from app.api.courses.errors import InsufficientRights, InsufficientFilterRights
 from typing import Optional, List
+from app.docs import admin_required, user_required, privilege_required
 
 
 course_router = APIRouter()
 
 
-@course_router.post("/", tags=["Courses", "Admin"])
+@course_router.post("/", tags=["Courses", "Admin"],
+                    responses={
+                        **admin_required,
+                        **privilege_required
+                    })
 async def admin_create_course(
     course: CourseCreate, 
     db: AsyncSession = Depends(get_async_db), 
@@ -33,7 +38,11 @@ async def admin_create_course(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@course_router.delete("/{id}", tags=["Courses", "Admin"])
+@course_router.delete("/{id}", tags=["Courses", "Admin"],
+                      responses={
+                          **admin_required,
+                          **privilege_required
+                      })
 async def admin_delete_course(
     id: int, 
     course: Course = Depends(get_course_by_id), 
@@ -45,7 +54,11 @@ async def admin_delete_course(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@course_router.patch("/{id}", tags=["Courses", "Admin"])
+@course_router.patch("/{id}", tags=["Courses", "Admin"],
+                     responses={
+                         **admin_required,
+                         **privilege_required
+                     })
 async def admin_patch_course(
     id: int,
     update: CourseUpdate,
@@ -59,7 +72,8 @@ async def admin_patch_course(
 
 @course_router.get("/{id}", tags=["Courses"],
                    responses={
-                       403: { "description": "Insufficient rights to retrieve the course" }
+                       **user_required,
+                       403: { "description": InsufficientRights.message }
                    })
 async def get_single_course(
     id: int,
@@ -78,7 +92,8 @@ async def get_single_course(
 
 @course_router.get("/", tags=["Courses"],
                    responses={
-                       403: { "description": "Insufficient rights to apply particular filters" }
+                       **user_required,
+                       403: { "description": InsufficientFilterRights.message }
                    })
 async def get_multiple_courses(
     tags: Optional[List[str]] = Query(None),

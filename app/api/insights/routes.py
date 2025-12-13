@@ -6,12 +6,16 @@ from app.database import get_async_db
 from app.api.auth.schemas import CurrentUser
 from typing import List
 from app.api.insights.services import get_filtered_articles
+from app.docs import user_required
 
 
 insights_router = APIRouter()
 
 
-@insights_router.get("/en", tags=["Insights"])
+@insights_router.get("/en", tags=["Insights"], 
+                     responses={
+                         **user_required
+                     })
 async def get_en_news(
     db: AsyncSession = Depends(get_async_db),
     current_user: CurrentUser = Depends(get_user)
@@ -19,7 +23,10 @@ async def get_en_news(
     return await get_filtered_articles(db, "EN")
 
 
-@insights_router.get("/ua", tags=["Insights"])
+@insights_router.get("/ua", tags=["Insights"],
+                     responses={
+                         **user_required
+                     })
 async def get_ua_news(
     db: AsyncSession = Depends(get_async_db),
     current_user: CurrentUser = Depends(get_user)
