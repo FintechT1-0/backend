@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     CORS_DEBUG_MODE: bool
     TRUSTED_ORIGIN: str
     ADMIN_PASSWORD: str
+    DB_CONNECTION_LIMIT: int
+    WORKERS: int
 
     class Config:
         env_file = ".env"
