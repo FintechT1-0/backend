@@ -2,14 +2,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.api.courses.schemas import (
     CourseCreate, CourseUpdate, CourseView,
-    PaginationInfo, CourseId
+    PaginationInfo, CourseId, CourseFilter
 )
 from app.models import Course
 from datetime import datetime
 from app.api.auth.schemas import CurrentUser
 from app.api.courses.errors import InsufficientRights, InsufficientFilterRights
 from app.api.courses.utils import build_course_filters
-from typing import Optional
+from typing import Optional, List
 
 
 async def create_course(db: AsyncSession, course: CourseCreate) -> CourseId:
@@ -45,38 +45,29 @@ def try_get_course(course: Course, current_user: CurrentUser) -> CourseView:
 
 
 async def filter_courses(
+    tags: Optional[List[str]],
+    parameters: CourseFilter,
     db: AsyncSession, 
     current_user: CurrentUser,
-    tags: Optional[str] = None,
-    lang: Optional[str] = None,
-    title: Optional[str] = None,
-    description: Optional[str] = None,
-    link: Optional[str] = None,
-    durationText: Optional[str] = None,
-    price_min: Optional[float] = None,
-    price_max: Optional[float] = None,
-    isPublished: Optional[bool] = None,
-    page: int = 1,
-    page_size: int = 20
 ) -> PaginationInfo:
-    if current_user.role != "admin" and isPublished != None:
+    if current_user.role != "admin" and parameters.isPublished != None:
         raise InsufficientFilterRights
 
-    filters = build_course_filters(lang, tags, title, description, link, durationText, price_min, price_max, isPublished)
+    filters = build_course_filters(tags, parameters)
 
     query = select(Course).filter(*filters)
 
     total_courses_result = await db.execute(query)
     total_courses = len(total_courses_result.scalars().all())
-    total_pages = (total_courses + page_size - 1) // page_size
+    total_pages = (total_courses + parameters.page_size - 1) // parameters.page_size
 
-    query = query.offset((page - 1) * page_size).limit(page_size)
+    query = query.offset((parameters.page - 1) * parameters.page_size).limit(parameters.page_size)
     result = await db.execute(query)
     courses = result.scalars().all()
 
     return PaginationInfo(
         courses=[CourseView.from_orm(course) for course in courses],
-        current_page=page,
+        current_page=parameters.page,
         page_size=len(courses),
         total_courses=total_courses,
         total_pages=total_pages

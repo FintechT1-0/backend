@@ -34,13 +34,24 @@ class Course(Base):
     __tablename__ = "courses"
 
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, nullable=False)
-    description = Column(String, nullable=False)
-    lang = Column(String, nullable=False)
-    link = Column(String, nullable=False)
-    durationText = Column(String, nullable=False)
-    price = Column(Float, nullable=False)
+
+    title_ua = Column(String, nullable=False)
+    title_en = Column(String, nullable=False)
+
+    description_ua = Column(String, nullable=False)
+    description_en = Column(String, nullable=False)
+
+    link = Column(String, nullable=True)
+    speaker = Column(String, nullable=True)
+    image = Column(String, nullable=True)
+
+    category = Column(String, nullable=False)
     tags = Column(ARRAY(String), nullable=False)
+
+    durationText = Column(String, nullable=False)
+
+    price = Column(Float, nullable=False)
+
     isPublished = Column(Boolean, default=False, nullable=False)
     createdAt = Column(DateTime, default=datetime.utcnow, nullable=False)
     updatedAt = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

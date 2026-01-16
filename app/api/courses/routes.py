@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, status, Response, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.courses.schemas import (
     CourseCreate, CourseUpdate, CourseView,
-    PaginationInfo, CourseId
+    PaginationInfo, CourseId, CourseFilter
 )
 from app.api.auth.services import (
     get_admin, get_user
@@ -18,6 +18,8 @@ from app.api.courses.utils import get_course_by_id
 from app.api.courses.errors import InsufficientRights, InsufficientFilterRights
 from typing import Optional, List
 from app.docs import admin_required, user_required, privilege_required
+
+from loguru import logger
 
 
 course_router = APIRouter()
@@ -96,16 +98,7 @@ async def get_single_course(
                    })
 async def get_multiple_courses(
     tags: Optional[List[str]] = Query(None),
-    lang: Optional[str] = None,
-    title: Optional[str] = None,
-    description: Optional[str] = None,
-    link: Optional[str] = None,
-    durationText: Optional[str] = None,
-    price_min: Optional[float] = Query(None, ge=0),
-    price_max: Optional[float] = Query(None, ge=0),
-    isPublished: Optional[bool] = None,
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
+    parameters: CourseFilter = Depends(),
     db: AsyncSession = Depends(get_async_db), 
     current_user: CurrentUser = Depends(get_user)
 ) -> PaginationInfo:
@@ -116,13 +109,9 @@ async def get_multiple_courses(
     To send an array of query parameters, use following syntax:
     http://127.0.0.1:8000/courses/?tags=AI for Fintech&tags=Fintech, Digital Finance %26 Virtual Assets
     """
+
+    logger.debug(parameters)
     try:
-        return await filter_courses(
-            db, current_user, tags,
-            lang, title, description, 
-            link, durationText, price_min, 
-            price_max, isPublished, page, 
-            page_size
-        )
+        return await filter_courses(tags, parameters, db, current_user)
     except InsufficientFilterRights as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)

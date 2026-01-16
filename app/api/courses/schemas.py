@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, validator, HttpUrl
-from typing import List, Optional, Literal
+from typing import List, Optional
 from datetime import datetime
+from fastapi import Query
 
 
 def tags_validator(tags: List[str]) -> List[str]:
@@ -23,33 +24,76 @@ def tags_validator(tags: List[str]) -> List[str]:
 
 
 class CourseCreate(BaseModel):
-    title: str = Field(..., max_length=256)
-    description: str = Field(..., max_length=2048)
-    link: HttpUrl
-    durationText: str = Field(..., min_length=0, max_length=64)
-    price: float = Field(..., ge=0)
-    tags: List[str] = Field(default_factory=list)
-    isPublished: bool = False
-    lang: Literal["EN", "UA"]
+    title_ua: str = Field(..., min_length=1, max_length=256)
+    title_en: str = Field(..., min_length=1, max_length=256)
 
-    @validator('tags', pre=True, always=True)
+    description_ua: str = Field(..., min_length=1, max_length=2048)
+    description_en: str = Field(..., min_length=1, max_length=2048)
+
+    category: str = Field(..., min_length=1, max_length=128)
+
+    tags: List[str] = Field(..., min_items=1)
+
+    durationText: str = Field(..., min_length=1, max_length=64)
+
+    price: float = Field(..., ge=0)
+
+    link: Optional[HttpUrl] = None
+    speaker: Optional[str] = Field(None, min_length=1, max_length=256)
+    image: Optional[str] = Field(None, min_length=1, max_length=512)
+
+    isPublished: bool = False
+
+    @validator("tags", pre=True)
     def validate_tags(cls, v):
         return tags_validator(v)
 
 
 class CourseUpdate(BaseModel):
-    title: Optional[str] = Field(None, max_length=256)
-    description: Optional[str] = Field(None, max_length=2048)
-    link: Optional[HttpUrl]
-    durationText: Optional[str] = Field(None, min_length=0, max_length=64)
-    price: Optional[float] = Field(None, ge=0)
-    tags: Optional[List[str]] = None
-    isPublished: Optional[bool] = None
-    lang: Optional[Literal["EN", "UA"]] = None
+    title_ua: Optional[str] = Field(None, min_length=1, max_length=256)
+    title_en: Optional[str] = Field(None, min_length=1, max_length=256)
 
-    @validator('tags', pre=True, always=True)
+    description_ua: Optional[str] = Field(None, min_length=1, max_length=2048)
+    description_en: Optional[str] = Field(None, min_length=1, max_length=2048)
+
+    category: Optional[str] = Field(None, min_length=1, max_length=128)
+
+    tags: Optional[List[str]] = None
+
+    durationText: Optional[str] = Field(None, min_length=1, max_length=64)
+
+    price: Optional[float] = Field(None, ge=0)
+
+    link: Optional[HttpUrl] = None
+    speaker: Optional[str] = Field(None, min_length=1, max_length=256)
+    image: Optional[str] = Field(None, min_length=1, max_length=512)
+
+    isPublished: Optional[bool] = None
+
+    @validator("tags", pre=True)
     def validate_tags(cls, v):
         return tags_validator(v)
+    
+
+class CourseFilter(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+
+    category: Optional[str] = None
+    
+    durationText: Optional[str] = None
+
+    price_min: Optional[float] = Field(None, ge=0)
+    price_max: Optional[float] = Field(None, ge=0)
+
+    link: Optional[str] = None
+    speaker: Optional[str] = None
+    image: Optional[str] = None
+    
+    isPublished: Optional[bool] = None
+
+    page: int = Field(1, ge=1)
+    page_size: int = Field(20, ge=1, le=100)
 
 
 class CourseView(CourseCreate):
