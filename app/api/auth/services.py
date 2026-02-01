@@ -20,14 +20,30 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from loguru import logger
 from app.environment import settings
+from typing import Optional
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
+
 
 
 async def check_email(data: EmailCheck, db: AsyncSession) -> CheckResult:
     exists = True if await get_user_by_email(db, data.email) else False
     return CheckResult(exists=exists)
+
+
+async def get_optional_user(
+    token: Optional[str] = Depends(oauth2_scheme_optional), 
+    db: AsyncSession = Depends(get_async_db)
+) -> Optional[CurrentUser]:
+    if token is None:
+        return None
+
+    try:
+        return await get_user_by_token(token, db)
+    except (ExpiredToken, InvalidToken, NonExistentUser):
+        return None
 
 
 async def get_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_async_db)) -> CurrentUser:

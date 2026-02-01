@@ -5,7 +5,7 @@ from app.api.courses.schemas import (
     PaginationInfo, CourseId, CourseFilter
 )
 from app.api.auth.services import (
-    get_admin, get_user
+    get_admin, get_user, get_optional_user
 )
 from app.database import get_async_db
 from app.api.courses.services import (
@@ -100,7 +100,7 @@ async def get_multiple_courses(
     tags: Optional[List[str]] = Query(None),
     parameters: CourseFilter = Depends(),
     db: AsyncSession = Depends(get_async_db), 
-    current_user: CurrentUser = Depends(get_user)
+    current_user: Optional[CurrentUser] = Depends(get_optional_user)
 ) -> PaginationInfo:
     """
     Retrieves multiple courses with filters and pagination.

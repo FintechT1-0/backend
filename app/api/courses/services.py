@@ -48,9 +48,9 @@ async def filter_courses(
     tags: Optional[List[str]],
     parameters: CourseFilter,
     db: AsyncSession, 
-    current_user: CurrentUser,
+    current_user: Optional[CurrentUser],
 ) -> PaginationInfo:
-    if current_user.role != "admin" and parameters.isPublished != None:
+    if (current_user is None or current_user.role != "admin") and parameters.isPublished != None:
         raise InsufficientFilterRights
 
     filters = build_course_filters(tags, parameters)
