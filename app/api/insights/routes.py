@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.insights.schemas import NewsItem
-from app.api.auth.services import get_user
+from app.api.auth.services import get_user, get_optional_user
 from app.database import get_async_db
 from app.api.auth.schemas import CurrentUser
-from typing import List
+from typing import List, Optional
 from app.api.insights.services import get_filtered_articles
 from app.docs import user_required
 
@@ -18,7 +18,7 @@ insights_router = APIRouter()
                      })
 async def get_en_news(
     db: AsyncSession = Depends(get_async_db),
-    current_user: CurrentUser = Depends(get_user)
+    current_user: Optional[CurrentUser] = Depends(get_optional_user)
 ) -> List[NewsItem]:
     return await get_filtered_articles(db, "EN")
 
@@ -29,6 +29,6 @@ async def get_en_news(
                      })
 async def get_ua_news(
     db: AsyncSession = Depends(get_async_db),
-    current_user: CurrentUser = Depends(get_user)
+    current_user: Optional[CurrentUser] = Depends(get_optional_user)
 ) -> List[NewsItem]:
     return await get_filtered_articles(db, "UA")
