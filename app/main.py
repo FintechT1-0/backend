@@ -8,6 +8,7 @@ from app.database import Base, engine
 from app.api.auth.routes import auth_router
 from app.api.courses.routes import course_router
 from app.api.insights.routes import insights_router
+from app.api.telemetry.routes import telemetry_router
 
       
 app = FastAPI()
@@ -37,3 +38,4 @@ app.add_middleware(
 app.include_router(auth_router, prefix="/auth")
 app.include_router(course_router, prefix="/courses")
 app.include_router(insights_router, prefix="/insights")
+app.include_router(telemetry_router, prefix="/telemetry")

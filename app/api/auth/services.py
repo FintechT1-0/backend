@@ -16,7 +16,10 @@ from app.api.auth.errors import (
     ExpiredToken, NonExistentUser, InvalidAdminPassword
 )
 from app.database import get_async_db
-from fastapi import Depends, HTTPException, status
+from fastapi import (
+    Depends, HTTPException, status,
+    WebSocket, WebSocketException
+)
 from fastapi.security import OAuth2PasswordBearer
 from loguru import logger
 from app.environment import settings
@@ -26,6 +29,23 @@ from typing import Optional
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
 
+
+async def get_current_user_ws(
+    websocket: WebSocket,
+    db: AsyncSession = Depends(get_async_db),
+) -> CurrentUser:
+    token = websocket.query_params.get("token")
+
+    if not token:
+        await websocket.close(
+            code=status.WS_1008_POLICY_VIOLATION,
+            reason="Missing token.",
+        )
+
+    try:
+        return await get_user_by_token(token, db)
+    except (ExpiredToken, InvalidToken, NonExistentUser) as e:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason=e.message)
 
 
 async def check_email(data: EmailCheck, db: AsyncSession) -> CheckResult:

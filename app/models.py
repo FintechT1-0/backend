@@ -55,3 +55,13 @@ class Course(Base):
     isPublished = Column(Boolean, default=False, nullable=False)
     createdAt = Column(DateTime, default=datetime.utcnow, nullable=False)
     updatedAt = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+
+class UserSession(Base):
+    __tablename__ = "sessions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    start = Column(DateTime, nullable=False)
+    end = Column(DateTime, nullable=False)
+    country = Column(String, nullable=False)
+    ip = Column(String, nullable=False)
