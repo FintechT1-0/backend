@@ -2,6 +2,14 @@ from pydantic import BaseModel, Field, EmailStr
 from typing import Optional
 
 
+class EmailResend(BaseModel):
+    email: EmailStr = Field(...)
+
+
+class VerificationToken(BaseModel):
+    token: str
+
+
 class EmailCheck(BaseModel):
     email: str
 

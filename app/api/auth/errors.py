@@ -20,3 +20,7 @@ class CredentialsAlreadyTaken(Exception):
 
 class InvalidAdminPassword(Exception):
     message = "Provided admin password is invalid."
+
+
+class UnverifiedEmail(Exception):
+    message = "Please, verify your email to proceed further."

@@ -3,7 +3,7 @@ from sqlalchemy.future import select
 from app.api.auth.schemas import (
     UserCreate, UserLogin, CurrentUser, 
     LoginResponse, UserInfo, EmailCheck, 
-    CheckResult
+    CheckResult, VerificationToken
 )
 from app.api.auth.utils import hash_password
 from app.models import User
@@ -13,17 +13,19 @@ from app.api.auth.utils import (
 )
 from app.api.auth.errors import (
     InvalidCredentials, CredentialsAlreadyTaken, InvalidToken, 
-    ExpiredToken, NonExistentUser, InvalidAdminPassword
+    ExpiredToken, NonExistentUser, InvalidAdminPassword,
+    UnverifiedEmail
 )
 from app.database import get_async_db
 from fastapi import (
     Depends, HTTPException, status,
-    WebSocket, WebSocketException
+    WebSocket
 )
 from fastapi.security import OAuth2PasswordBearer
 from loguru import logger
 from app.environment import settings
 from typing import Optional
+import httpx
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -106,6 +108,9 @@ async def try_login(db: AsyncSession, provided: UserLogin) -> LoginResponse:
     if not user or not verify_password(provided.password, user.hashed_password):
         raise InvalidCredentials
     
+    if user.is_verified == False:
+        raise UnverifiedEmail
+    
     access_token = create_access_token(data={"sub": user.email})
 
     return LoginResponse(token=access_token, user=user)
@@ -138,3 +143,49 @@ async def create_user(db: AsyncSession, user: UserCreate) -> UserInfo:
     await db.refresh(db_user)
 
     return UserInfo(name=db_user.name, surname=db_user.surname, email=db_user.email, role=db_user.role)
+
+
+async def send_email_async(recipient: str, verification_token: str, resend=False):
+    payload = {
+        "from": settings.EMAIL,
+        "to": [recipient],
+        "subject": "Welcome to Fintech Universe!",
+        "html": f"""
+            {'''We are glad to welcome you to our educational resource,<br> 
+            Fintech Universe! To confirm your email, please paste<br>
+            the following token into the confirmation field:<br>'''
+            if not resend else '''Your new confirmation token:<br>'''}
+            <strong>{verification_token}</strong><br><br>
+            Please ignore this email if you have not registered on our website.
+        """
+    }
+    logger.debug(f"Sending letter with payload: {payload}")
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://www.unosend.co/api/v1/emails", 
+                headers={"Authorization": f"Bearer {settings.UNOSEND_API_KEY}"}, 
+                json=payload
+            )
+            response.raise_for_status()
+    except Exception as e:
+        logger.critical(f"Critial error while sending a letter: {str(e)}")
+
+
+async def try_verify_email(db: AsyncSession, token: VerificationToken):
+    payload = decode_access_token(token.token)
+    email = payload.get("sub")
+
+    user = await get_user_by_email(db, email)
+
+    if not user:
+        raise NonExistentUser
+
+    user.is_verified = True
+
+    db.add(user)
+    await db.commit()
+
+
+

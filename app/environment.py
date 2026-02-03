@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     TRUSTED_ORIGIN: str
     ADMIN_PASSWORD: str
     DB_CONNECTION_LIMIT: int
+    UNOSEND_API_KEY: str
+    EMAIL: str
 
     class Config:
         env_file = ".env"
