@@ -20,6 +20,9 @@ async def get_en_news(
     db: AsyncSession = Depends(get_async_db),
     current_user: Optional[CurrentUser] = Depends(get_optional_user)
 ) -> List[NewsItem]:
+    '''
+    Retrieves a list of 10 insights in English.
+    '''
     return await get_filtered_articles(db, "EN")
 
 
@@ -31,4 +34,7 @@ async def get_ua_news(
     db: AsyncSession = Depends(get_async_db),
     current_user: Optional[CurrentUser] = Depends(get_optional_user)
 ) -> List[NewsItem]:
+    '''
+    Retrieves a list of 10 insights in Ukrainian.
+    '''
     return await get_filtered_articles(db, "UA")

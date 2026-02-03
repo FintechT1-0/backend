@@ -1,7 +1,11 @@
-from sqlalchemy import Column, Integer, String, JSON, Float, Boolean, DateTime, Text
+from sqlalchemy import (
+    Column, Integer, String, 
+    Float, Boolean, DateTime, 
+    Text, Index, ForeignKey
+)
 from app.database import Base
 from datetime import datetime
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, TSTZRANGE
 
 
 class Article(Base):
@@ -60,8 +64,16 @@ class Course(Base):
 class UserSession(Base):
     __tablename__ = "sessions"
 
-    id = Column(Integer, primary_key=True, index=True)
-    start = Column(DateTime, nullable=False)
-    end = Column(DateTime, nullable=False)
+    id = Column(Integer, primary_key=True)
+    period = Column(TSTZRANGE, nullable=False)
     country = Column(String, nullable=False)
     ip = Column(String, nullable=False)
+    user = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    __table_args__ = (
+        Index(
+            "ix_sessions_period_gist",
+            "period",
+            postgresql_using="gist",
+        ),
+    )
