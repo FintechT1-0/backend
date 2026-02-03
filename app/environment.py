@@ -10,7 +10,6 @@ class Settings(BaseSettings):
     TRUSTED_ORIGIN: str
     ADMIN_PASSWORD: str
     DB_CONNECTION_LIMIT: int
-    WORKERS: int
 
     class Config:
         env_file = ".env"

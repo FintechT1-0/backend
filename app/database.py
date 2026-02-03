@@ -7,7 +7,7 @@ engine = create_async_engine(
     settings.DATABASE_URL,
     echo=False,
     future=True,
-    pool_size=int(settings.DB_CONNECTION_LIMIT / settings.WORKERS),
+    pool_size=settings.DB_CONNECTION_LIMIT,
     max_overflow=0
 )
 

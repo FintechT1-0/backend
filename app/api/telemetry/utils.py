@@ -37,7 +37,8 @@ async def active_users_distribution(db: AsyncSession, since_days: int) -> dict:
         GROUP BY country
     """)
 
-    country_result = await db.execute(country_query, {"start_time": start_time, "end_time": now})
+    # + 1 hour since current time is truncated (e.g. 09:01:54 -> 09:00:00)
+    country_result = await db.execute(country_query, {"start_time": start_time, "end_time": now + timedelta(hours=1)})
     country_data = {row.country: row.active_users for row in country_result.fetchall()}
 
     return {
