@@ -1,24 +1,26 @@
 from fastapi import (
     APIRouter, Depends, HTTPException, 
-    status, BackgroundTasks, Response
+    status, BackgroundTasks, Response,
+    Query
 )
+from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.auth.schemas import (
     CurrentUser, UserLogin, UserCreate, 
     UserInfo, LoginResponse, EmailCheck, 
-    CheckResult, VerificationToken, EmailResend
+    CheckResult, EmailResend
 )
 from app.api.auth.services import (
     get_user, try_login, create_user, 
-    check_email, send_email_async, try_verify_email
+    check_email, try_verify_email, initiate_verification_task
 )
-from app.api.auth.utils import create_access_token 
 from app.database import get_async_db
 from app.api.auth.errors import (
     InvalidCredentials, CredentialsAlreadyTaken, InvalidAdminPassword,
     UnverifiedEmail, ExpiredToken, InvalidToken, NonExistentUser
 )
 from app.docs import user_required, either
+from app.environment import settings
 
 
 auth_router = APIRouter()
@@ -54,11 +56,7 @@ async def register_user(
     """Register a new user."""
 
     try:
-        user_info = await create_user(db=db, user=user)
-        v_token = create_access_token({"sub": user_info.email})
-        background_tasks.add_task(send_email_async, recipient=user_info.email, verification_token=v_token)
-
-        return user_info
+        return await create_user(db, background_tasks, user)
 
     except CredentialsAlreadyTaken as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
@@ -82,18 +80,26 @@ async def login(user: UserLogin, db: AsyncSession = Depends(get_async_db)) -> Lo
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
 
 
-@auth_router.post("/verify", tags=["Verification"],
+@auth_router.get("/verify", tags=["Verification"],
                   responses={
                       204: { "description": "Successful verification." },
                       403: { "description": either(ExpiredToken.message, InvalidToken.message, NonExistentUser.message) }
                   })
-async def verify_email(token: VerificationToken, db: AsyncSession = Depends(get_async_db)) -> Response:
+async def verify_email(token: str = Query(...), db: AsyncSession = Depends(get_async_db)) -> RedirectResponse:
     """Verify your email by JWT token."""
     try:
         await try_verify_email(db, token)
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+        return RedirectResponse(
+            url=f"{settings.FRONTEND_URL}/login?verification=true",
+            status_code=status.HTTP_302_FOUND
+        )
+    
     except (ExpiredToken, InvalidToken, NonExistentUser) as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
+        return RedirectResponse(
+            url=f"{settings.FRONTEND_URL}/login?verification=false&reason={e.message}",
+            status_code=status.HTTP_302_FOUND
+        )
     
 
 @auth_router.post("/resend", tags=["Verification"],
@@ -102,8 +108,7 @@ async def verify_email(token: VerificationToken, db: AsyncSession = Depends(get_
                   })
 async def resend_email(email: EmailResend, background_tasks: BackgroundTasks) -> Response:
     """Resend a letter to verify your email."""
-    v_token = create_access_token({"sub": email.email})
-    background_tasks.add_task(send_email_async, recipient=email.email, verification_token=v_token, resend=True)
+    await initiate_verification_task(background_tasks, email.email)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
     

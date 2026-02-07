@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Verify your email</title>
+</head>
+<body style="margin:0; padding:0; background-color:#f4f7fb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+
+  <!-- Wrapper -->
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#f4f7fb; padding:40px 0;">
+    <tr>
+      <td align="center">
+
+        <!-- Card -->
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:520px; background-color:#ffffff; border-radius:12px; box-shadow:0 10px 30px rgba(16,24,40,0.08); overflow:hidden;">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#0f172a,#1e293b); padding:28px 32px;">
+              <h1 style="margin:0; color:#ffffff; font-size:22px; font-weight:600;">
+                Fintech Universe 1.0
+              </h1>
+              <p style="margin:6px 0 0; color:#cbd5f5; font-size:14px;">
+                Secure access to your financial world
+              </p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding:32px;">
+              <h2 style="margin:0 0 12px; color:#0f172a; font-size:20px;">
+                Verify your email address
+              </h2>
+
+              <p style="margin:0 0 20px; color:#475569; font-size:15px; line-height:1.6;">
+                Thanks for signing up for <strong>Fintech Universe 1.0</strong>.
+                To keep your account secure, please confirm your email address by clicking the button below.
+              </p>
+
+              <!-- Button -->
+              <table cellpadding="0" cellspacing="0" role="presentation" style="margin:24px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="{{verification_link}}" target="_blank"
+                       style="display:inline-block; background:linear-gradient(135deg,#2563eb,#1d4ed8); color:#ffffff; text-decoration:none; font-size:15px; font-weight:600; padding:14px 26px; border-radius:8px;">
+                      Verify Email
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 16px; color:#64748b; font-size:14px; line-height:1.6;">
+                This link will expire in <strong>24 hours</strong>.
+                If you didn’t create an account, you can safely ignore this email.
+              </p>
+
+              <p style="margin:0; color:#94a3b8; font-size:13px;">
+                Having trouble? Copy and paste this link into your browser:
+              </p>
+              <p style="margin:6px 0 0; font-size:13px; word-break:break-all;">
+                <a href="{{verification_link}}" style="color:#2563eb; text-decoration:none;">
+                  {{verification_link}}
+                </a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding:0 32px;">
+              <hr style="border:none; border-top:1px solid #e5e7eb; margin:0;">
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:20px 32px 28px; color:#94a3b8; font-size:12px; line-height:1.6;">
+              <p style="margin:0;">
+                © {{year}} Fintech Universe 1.0. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+        <!-- End Card -->
+
+      </td>
+    </tr>
+  </table>
+  <!-- End Wrapper -->
+
+</body>
+</html>

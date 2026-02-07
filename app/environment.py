@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     DB_CONNECTION_LIMIT: int
     UNOSEND_API_KEY: str
     EMAIL: str
+    FRONTEND_URL: str
+    BACKEND_URL: str
 
     class Config:
         env_file = ".env"

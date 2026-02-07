@@ -3,13 +3,12 @@ from sqlalchemy.future import select
 from app.api.auth.schemas import (
     UserCreate, UserLogin, CurrentUser, 
     LoginResponse, UserInfo, EmailCheck, 
-    CheckResult, VerificationToken
+    CheckResult
 )
-from app.api.auth.utils import hash_password
 from app.models import User
 from app.api.auth.utils import (
     verify_password, create_access_token, decode_access_token, 
-    get_user_by_email
+    get_user_by_email, hash_password
 )
 from app.api.auth.errors import (
     InvalidCredentials, CredentialsAlreadyTaken, InvalidToken, 
@@ -19,12 +18,14 @@ from app.api.auth.errors import (
 from app.database import get_async_db
 from fastapi import (
     Depends, HTTPException, status,
-    WebSocket
+    WebSocket, BackgroundTasks
 )
 from fastapi.security import OAuth2PasswordBearer
 from loguru import logger
 from app.environment import settings
 from typing import Optional
+from app.template_storage import templates
+from datetime import datetime
 import httpx
 
 
@@ -116,7 +117,7 @@ async def try_login(db: AsyncSession, provided: UserLogin) -> LoginResponse:
     return LoginResponse(token=access_token, user=user)
 
 
-async def create_user(db: AsyncSession, user: UserCreate) -> UserInfo:
+async def create_user(db: AsyncSession, tasks: BackgroundTasks, user: UserCreate) -> UserInfo:
     existing_user = await get_user_by_email(db, user.email)
 
     if existing_user:
@@ -142,24 +143,34 @@ async def create_user(db: AsyncSession, user: UserCreate) -> UserInfo:
     await db.commit()
     await db.refresh(db_user)
 
+    await initiate_verification_task(tasks, user.email)
+
     return UserInfo(name=db_user.name, surname=db_user.surname, email=db_user.email, role=db_user.role)
 
 
-async def send_email_async(recipient: str, verification_token: str, resend=False):
+async def initiate_verification_task(tasks: BackgroundTasks, recipient: str):
+    verification_token = create_access_token({"sub": recipient})
+    tasks.add_task(
+        send_email_async,
+        recipient=recipient,
+        template_name='verify',
+        template_args={
+            "verification_link": settings.BACKEND_URL + f"/auth/verify?token={verification_token}",
+            "year": str(datetime.now().year)
+        },
+        subject="Email verification"
+    )
+
+
+async def send_email_async(recipient: str, template_name: str, template_args: dict, subject: str):
     payload = {
         "from": settings.EMAIL,
         "to": [recipient],
-        "subject": "Welcome to Fintech Universe!",
-        "html": f"""
-            {'''We are glad to welcome you to our educational resource,<br> 
-            Fintech Universe! To confirm your email, please paste<br>
-            the following token into the confirmation field:<br>'''
-            if not resend else '''Your new confirmation token:<br>'''}
-            <strong>{verification_token}</strong><br><br>
-            Please ignore this email if you have not registered on our website.
-        """
+        "subject": subject,
+        "html": templates[template_name].render(**template_args)
     }
-    logger.debug(f"Sending letter with payload: {payload}")
+
+    logger.debug(f"Sending letter f'{template_name}.html' with arguments: {template_args}")
 
     try:
         async with httpx.AsyncClient() as client:
@@ -173,8 +184,8 @@ async def send_email_async(recipient: str, verification_token: str, resend=False
         logger.critical(f"Critial error while sending a letter: {str(e)}")
 
 
-async def try_verify_email(db: AsyncSession, token: VerificationToken):
-    payload = decode_access_token(token.token)
+async def try_verify_email(db: AsyncSession, token: str):
+    payload = decode_access_token(token)
     email = payload.get("sub")
 
     user = await get_user_by_email(db, email)

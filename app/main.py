@@ -4,14 +4,38 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
 from app.database import Base, engine
+from jinja2 import Environment, FileSystemLoader
 
 from app.api.auth.routes import auth_router
 from app.api.courses.routes import course_router
 from app.api.insights.routes import insights_router
 from app.api.telemetry.routes import telemetry_router
 
+import os
+import app.template_storage as template_storage
+
       
 app = FastAPI()
+
+
+@app.on_event("startup")
+async def startup_init():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    template_dir = os.path.join(os.path.dirname(__file__), "email_templates")
+
+    template_storage.env = Environment(
+        loader=FileSystemLoader(template_dir),
+        autoescape=True
+    )
+
+    for filename in os.listdir(template_dir):
+        if filename.endswith(".html"):
+            template_name = os.path.splitext(filename)[0]
+            template_storage.templates[template_name] = template_storage.env.get_template(filename)
+
+    logger.debug(f"Loaded email templates: {list(template_storage.templates.keys())}")
 
 
 @app.on_event("startup")
@@ -22,7 +46,7 @@ async def create_tables():
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    logger.debug(str(exc))
+    logger.critical(f"Critical uncaught error: {str(exc)}")
     return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"detail": "Unexpected error."})
 
 
