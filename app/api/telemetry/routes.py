@@ -58,11 +58,17 @@ async def get_active_users(
 @telemetry_router.websocket("/")
 async def telemetry_ws(
     websocket: WebSocket,
-    current_user: CurrentUser = Depends(get_current_user_ws),
+    current_user: CurrentUser | str = Depends(get_current_user_ws),
     db: AsyncSession = Depends(get_async_db)
 ):
     await websocket.accept()
 
+    logger.debug(f"Result of retrieving current user for WS: {current_user}")
+
+    if isinstance(current_user, str):
+        await websocket.close(code=1008, reason=current_user)
+        return 
+    
     client_ip = websocket.headers.get("cf-connecting-ip")
     if not client_ip:
         client_ip, client_port = websocket.client
@@ -75,7 +81,7 @@ async def telemetry_ws(
         country_data = await fetch_ip_info(client_ip)
     except Exception as e:
         logger.debug(f"Error while fetching country data: {str(e)}")
-        await websocket.close(code=1008)
+        await websocket.close(code=1008, reason="Could not fetch country data.")
         return
     
     try:

@@ -40,15 +40,12 @@ async def get_current_user_ws(
     token = websocket.query_params.get("token")
 
     if not token:
-        await websocket.close(
-            code=status.WS_1008_POLICY_VIOLATION,
-            reason="Missing token.",
-        )
+        return "Missing token."
 
     try:
         return await get_user_by_token(token, db)
     except (ExpiredToken, InvalidToken, NonExistentUser) as e:
-        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason=e.message)
+        return e.message
 
 
 async def check_email(data: EmailCheck, db: AsyncSession) -> CheckResult:
