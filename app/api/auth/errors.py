@@ -1,26 +1,47 @@
 class InvalidToken(Exception):
-    message = "This token is invalid."
+    message = {
+        "en": "This token is invalid.",
+        "ua": "Цей токен недійсний."
+    }
 
 
 class ExpiredToken(Exception):
-    message = "This token is expired."
+    message = {
+        "en": "This token is expired.",
+        "ua": "Термін дії цього токена закінчився."
+    }
 
 
 class NonExistentUser(Exception):
-    message = "This user does not exist."
+    message = {
+        "en": "This user does not exist.",
+        "ua": "Користувача не існує."
+    }
 
 
 class InvalidCredentials(Exception):
-    message = "Invalid email or password."
+    message = {
+        "en": "Invalid email or password.",
+        "ua": "Неправильна електронна пошта або пароль."
+    }
 
 
 class CredentialsAlreadyTaken(Exception):
-    message = "This email is already in use."
+    message = {
+        "en": "This email is already in use.",
+        "ua": "Ця електронна пошта вже використовується."
+    }
 
 
 class InvalidAdminPassword(Exception):
-    message = "Provided admin password is invalid."
+    message = {
+        "en": "Provided admin password is invalid.",
+        "ua": "Наданий пароль адміністратора недійсний."
+    }
 
 
 class UnverifiedEmail(Exception):
-    message = "Please, verify your email to proceed further."
+    message = {
+        "en": "Please, verify your email to proceed further.",
+        "ua": "Будь ласка, підтвердіть свою електронну пошту, щоб продовжити."
+    }

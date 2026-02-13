@@ -21,6 +21,7 @@ from app.api.auth.errors import (
 )
 from app.docs import user_required, either
 from app.environment import settings
+import json
 
 
 auth_router = APIRouter()
@@ -45,8 +46,8 @@ async def get_me(current_user: CurrentUser = Depends(get_user)) -> UserInfo:
 
 @auth_router.post("/register", tags=["Registration"],
                   responses={
-                      400: { "description": CredentialsAlreadyTaken.message },
-                      403: { "description": InvalidAdminPassword.message }
+                      400: { "description": CredentialsAlreadyTaken.message['en'] },
+                      403: { "description": InvalidAdminPassword.message['en'] }
                   })
 async def register_user(
     user: UserCreate, 
@@ -66,8 +67,8 @@ async def register_user(
 
 @auth_router.post("/login", tags=["Login"],
                   responses={
-                      400: { "description": InvalidCredentials.message },
-                      403: { "description": UnverifiedEmail.message }
+                      400: { "description": InvalidCredentials.message['en'] },
+                      403: { "description": UnverifiedEmail.message['en'] }
                   })
 async def login(user: UserLogin, db: AsyncSession = Depends(get_async_db)) -> LoginResponse:
     """Authenticate a user and return a login response."""
@@ -83,7 +84,7 @@ async def login(user: UserLogin, db: AsyncSession = Depends(get_async_db)) -> Lo
 @auth_router.get("/verify", tags=["Verification"],
                   responses={
                       204: { "description": "Successful verification." },
-                      403: { "description": either(ExpiredToken.message, InvalidToken.message, NonExistentUser.message) }
+                      403: { "description": either(ExpiredToken.message['en'], InvalidToken.message['en'], NonExistentUser.message['en']) }
                   })
 async def verify_email(token: str = Query(...), db: AsyncSession = Depends(get_async_db)) -> RedirectResponse:
     """Verify your email by JWT token."""
@@ -97,7 +98,7 @@ async def verify_email(token: str = Query(...), db: AsyncSession = Depends(get_a
     
     except (ExpiredToken, InvalidToken, NonExistentUser) as e:
         return RedirectResponse(
-            url=f"{settings.FRONTEND_URL}/login?verification=false&reason={e.message}",
+            url=f"{settings.FRONTEND_URL}/login?verification=false&reason={json.dumps(e.message)}",
             status_code=status.HTTP_302_FOUND
         )
     

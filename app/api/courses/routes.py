@@ -18,7 +18,6 @@ from app.api.courses.utils import get_course_by_id
 from app.api.courses.errors import InsufficientRights, InsufficientFilterRights
 from typing import Optional, List
 from app.docs import admin_required, user_required, privilege_required
-
 from loguru import logger
 
 
@@ -74,7 +73,7 @@ async def admin_patch_course(
 @course_router.get("/{id}", tags=["Courses"],
                    responses={
                        **user_required,
-                       403: { "description": InsufficientRights.message }
+                       403: { "description": InsufficientRights.message['en'] }
                    })
 async def get_single_course(
     id: int,
@@ -94,7 +93,7 @@ async def get_single_course(
 @course_router.get("/", tags=["Courses"],
                    responses={
                        **user_required,
-                       403: { "description": InsufficientFilterRights.message }
+                       403: { "description": InsufficientFilterRights.message['en'] }
                    })
 async def get_multiple_courses(
     tags: Optional[List[str]] = Query(None),

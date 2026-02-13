@@ -1,5 +1,12 @@
 class InsufficientRights(Exception):
-    message = "You can't view this course."
+    message = {
+        "en": "You can't view this course.",
+        "ua": "Ви не можете переглядати цей курс."
+    }
+
 
 class InsufficientFilterRights(Exception):
-    message = "You can't use this filter."
+    message = {
+        "en": "You can't use this filter.",
+        "ua": "Ви не можете використовувати цей фільтр."
+    }
