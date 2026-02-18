@@ -45,3 +45,10 @@ class UnverifiedEmail(Exception):
         "en": "Please, verify your email to proceed further.",
         "ua": "Будь ласка, підтвердіть свою електронну пошту, щоб продовжити."
     }
+
+
+class UserSuspended(Exception):
+    message = {
+        "en": "Your account is blocked by the administrator.",
+        "ua": "Ваш обліковий запис заблоковано адміністратором."
+    }

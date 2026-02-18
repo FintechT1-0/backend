@@ -17,11 +17,14 @@ from app.config.models import Course
 from app.api.courses.utils import get_course_by_id
 from app.api.courses.errors import InsufficientRights, InsufficientFilterRights
 from typing import Optional, List
-from app.config.docs import admin_required, user_required, privilege_required
+from app.config.docs import (
+    admin_required, user_required, privilege_required,
+    user_suspended
+)
 from loguru import logger
 
 
-course_router = APIRouter()
+course_router = APIRouter(responses={**user_suspended})
 
 
 @course_router.post("/", tags=["Courses", "Admin"],

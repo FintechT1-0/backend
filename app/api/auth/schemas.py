@@ -20,6 +20,7 @@ class CurrentUser(BaseModel):
     email: str
     role: str
     id: int
+    is_suspended: bool
 
     class Config:
         from_attributes = True
@@ -49,6 +50,7 @@ class UserInfo(BaseModel):
     surname: str
     email: str
     role: str
+    is_suspended: bool
 
     class Config:
         from_attributes = True

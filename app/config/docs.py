@@ -16,6 +16,12 @@ privilege_required = {
     }
 }
 
+user_suspended = {
+    423: {
+        "description": "If this endpoint requires a user and you receive this code, your profile is blocked."
+    }
+}
+
 def either(*args):
     result = f"Either of {len(args)} conditions:\n"
     for i, arg in enumerate(args, start=1):

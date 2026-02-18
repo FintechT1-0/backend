@@ -33,6 +33,7 @@ class User(Base):
     role = Column(String, nullable=False)
     hashed_password = Column(String, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
+    is_suspended = Column(Boolean, default=False, nullable=False)
 
 
 class Course(Base):

@@ -19,12 +19,12 @@ from app.api.auth.errors import (
     InvalidCredentials, CredentialsAlreadyTaken, InvalidAdminPassword,
     UnverifiedEmail, ExpiredToken, InvalidToken, NonExistentUser
 )
-from app.config.docs import user_required, either
+from app.config.docs import user_required, user_suspended, either
 from app.config.environment import settings
 import json
 
 
-auth_router = APIRouter()
+auth_router = APIRouter(responses={**user_suspended})
 
 
 @auth_router.post("/checkEmail", tags=["Registration"])

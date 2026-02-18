@@ -13,7 +13,7 @@ from app.api.auth.utils import (
 from app.api.auth.errors import (
     InvalidCredentials, CredentialsAlreadyTaken, InvalidToken, 
     ExpiredToken, NonExistentUser, InvalidAdminPassword,
-    UnverifiedEmail
+    UnverifiedEmail, UserSuspended
 )
 from app.config.database import get_async_db
 from fastapi import (
@@ -69,6 +69,10 @@ async def get_optional_user(
 async def get_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_async_db)) -> CurrentUser:
     try:
         user = await get_user_by_token(token, db)
+
+        if user.is_suspended:
+            raise HTTPException(status_code=status.HTTP_423_LOCKED, detail=UserSuspended.message)
+        
     except (ExpiredToken, InvalidToken) as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.message)
     except NonExistentUser as e:
@@ -96,7 +100,7 @@ async def get_user_by_token(token: str, db: AsyncSession) -> CurrentUser:
     if not user:
         raise NonExistentUser
     
-    return CurrentUser(name=user.name, surname=user.surname, email=user.email, role=user.role, id=user.id)
+    return CurrentUser.from_orm(user)
 
 
 async def try_login(db: AsyncSession, provided: UserLogin) -> LoginResponse:
@@ -142,7 +146,7 @@ async def create_user(db: AsyncSession, tasks: BackgroundTasks, user: UserCreate
 
     await initiate_verification_task(tasks, user.email)
 
-    return UserInfo(name=db_user.name, surname=db_user.surname, email=db_user.email, role=db_user.role)
+    return UserInfo.from_orm(db_user)
 
 
 async def initiate_verification_task(tasks: BackgroundTasks, recipient: str):
