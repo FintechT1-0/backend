@@ -1,11 +1,66 @@
-from app.api.telemetry.schemas import IPInfo, NumericalTelemetry
+from app.api.telemetry.schemas import (
+    IPInfo, NumericalTelemetry, UserPaginationInfo,
+    UserFilter, UserView, UserSuspend
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import (
-    func, select, distinct
+    func, select, distinct,
+    and_
 )
 from app.config.models import UserSession, Course, User 
 from datetime import datetime, timedelta
+from app.shared.utils import paginate
+from app.api.auth.utils import get_user_by_id
+from app.api.auth.errors import NonExistentUser
+from app.api.telemetry.errors import CannotSuspendAnotherAdmin
+
 import httpx
+
+
+async def try_suspend_user(db: AsyncSession, parameters: UserSuspend):
+    user = await get_user_by_id(db, parameters.id)
+
+    print(f"Got user: {user}")
+
+    if not user:
+        raise NonExistentUser
+    
+    if user.role == "admin":
+        raise CannotSuspendAnotherAdmin
+    
+    user.is_suspended = parameters.status
+
+    await db.commit()
+
+
+
+async def filter_users(db: AsyncSession, parameters: UserFilter) -> UserPaginationInfo:
+    query = select(User)
+
+    conditions = [c for c in [
+        User.name == parameters.name if parameters.name is not None else None,
+        User.surname == parameters.surname if parameters.surname is not None else None,
+        User.email == parameters.email if parameters.email is not None else None,
+        User.is_suspended == parameters.is_suspended if parameters.is_suspended is not None else None,
+    ] if c is not None]
+
+    if conditions:
+        query = query.where(and_(*conditions))
+
+    users, total_users, total_pages = await paginate(
+        db=db,
+        base_query=query,
+        page=parameters.page,
+        page_size=parameters.page_size
+    )
+
+    return UserPaginationInfo(
+        users=[UserView.from_orm(user) for user in users],
+        current_page=parameters.page,
+        page_size=len(users),
+        total_users=total_users,
+        total_pages=total_pages
+    )
 
 
 async def fetch_ip_info(ip: str) -> IPInfo:

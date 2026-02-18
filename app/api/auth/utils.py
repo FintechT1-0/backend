@@ -12,6 +12,11 @@ import jwt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
+async def get_user_by_id(db: AsyncSession, identifier: int) -> User | None:
+    result = await db.execute(select(User).filter(User.id == identifier))
+    return result.scalars().first()
+
+
 async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     result = await db.execute(select(User).filter(User.email == email))
     return result.scalars().first()

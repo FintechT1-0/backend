@@ -1,14 +1,21 @@
 from fastapi import (
     APIRouter, WebSocket, Depends,
-    WebSocketDisconnect, Query
+    WebSocketDisconnect, Query, Response,
+    HTTPException, status
 )
 from app.api.auth.services import get_current_user_ws, get_admin
 from app.api.auth.schemas import CurrentUser
 from app.api.telemetry.services import (
-    fetch_ip_info, save_record, get_numerical_telemetry
+    fetch_ip_info, save_record, get_numerical_telemetry,
+    filter_users, try_suspend_user
 )
 from app.api.telemetry.utils import active_users_distribution
-from app.api.telemetry.schemas import Distribution, NumericalTelemetry
+from app.api.telemetry.schemas import (
+    Distribution, NumericalTelemetry, UserFilter,
+    UserPaginationInfo, UserSuspend
+)
+from app.api.telemetry.errors import CannotSuspendAnotherAdmin
+from app.api.auth.errors import NonExistentUser
 from app.config.database import get_async_db
 from loguru import logger
 from datetime import datetime, timezone
@@ -17,6 +24,46 @@ from app.config.docs import admin_required, privilege_required
 
 
 telemetry_router = APIRouter()
+
+
+@telemetry_router.post("/suspend", tags=["Telemetry", "Admin"],
+                       responses={
+                           **admin_required,
+                           **privilege_required,
+                           403: { "description": CannotSuspendAnotherAdmin.message['en'] },
+                           404: { "description": NonExistentUser.message['en'] }
+                       })
+async def suspend_user(
+    parameters: UserSuspend,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: CurrentUser = Depends(get_admin)
+) -> Response:
+    '''
+    Block or unblock a user by his ID.
+    '''
+    try:
+        await try_suspend_user(db, parameters)
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except CannotSuspendAnotherAdmin as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
+    except NonExistentUser as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
+
+
+@telemetry_router.get("/users", tags=["Telemetry", "Admin"],
+                      responses={
+                          **admin_required,
+                          **privilege_required
+                      })
+async def list_filtered_users(
+    parameters: UserFilter = Depends(),
+    db: AsyncSession = Depends(get_async_db),
+    current_user: CurrentUser = Depends(get_admin),
+) -> UserPaginationInfo:
+    '''
+    Returns a filtered list of users for an administrator.
+    '''
+    return await filter_users(db, parameters)
 
 
 @telemetry_router.get("/numerical", tags=["Telemetry", "Admin"],
