@@ -5,7 +5,7 @@ from app.api.auth.schemas import (
     LoginResponse, UserInfo, EmailCheck, 
     CheckResult
 )
-from app.models import User
+from app.config.models import User
 from app.api.auth.utils import (
     verify_password, create_access_token, decode_access_token, 
     get_user_by_email, hash_password
@@ -15,16 +15,16 @@ from app.api.auth.errors import (
     ExpiredToken, NonExistentUser, InvalidAdminPassword,
     UnverifiedEmail
 )
-from app.database import get_async_db
+from app.config.database import get_async_db
 from fastapi import (
     Depends, HTTPException, status,
     WebSocket, BackgroundTasks
 )
 from fastapi.security import OAuth2PasswordBearer
 from loguru import logger
-from app.environment import settings
+from app.config.environment import settings
 from typing import Optional
-from app.template_storage import templates
+from app.config.template_storage import templates
 from datetime import datetime
 import httpx
 

@@ -1,9 +1,9 @@
-from app.environment import settings
+from app.config.environment import settings
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
-from app.database import Base, engine
+from app.config.database import Base, engine
 from jinja2 import Environment, FileSystemLoader
 
 from app.api.auth.routes import auth_router
@@ -12,7 +12,7 @@ from app.api.insights.routes import insights_router
 from app.api.telemetry.routes import telemetry_router
 
 import os
-import app.template_storage as template_storage
+import app.config.template_storage as template_storage
 
       
 app = FastAPI()

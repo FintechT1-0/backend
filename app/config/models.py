@@ -3,7 +3,7 @@ from sqlalchemy import (
     Float, Boolean, DateTime, 
     Text, Index, ForeignKey
 )
-from app.database import Base
+from app.config.database import Base
 from datetime import datetime
 from sqlalchemy.dialects.postgresql import ARRAY, TSTZRANGE
 

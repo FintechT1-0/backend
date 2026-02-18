@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import (
     func, select, distinct
 )
-from app.models import UserSession, Course, User 
+from app.config.models import UserSession, Course, User 
 from datetime import datetime, timedelta
 import httpx
 

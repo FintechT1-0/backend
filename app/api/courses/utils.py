@@ -1,8 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import or_
 from fastapi import Depends
-from app.models import Course
-from app.database import get_async_db
+from app.config.models import Course
+from app.config.database import get_async_db
 from fastapi import HTTPException
 from typing import Optional, List
 from sqlalchemy.future import select

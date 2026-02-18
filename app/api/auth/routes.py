@@ -14,13 +14,13 @@ from app.api.auth.services import (
     get_user, try_login, create_user, 
     check_email, try_verify_email, initiate_verification_task
 )
-from app.database import get_async_db
+from app.config.database import get_async_db
 from app.api.auth.errors import (
     InvalidCredentials, CredentialsAlreadyTaken, InvalidAdminPassword,
     UnverifiedEmail, ExpiredToken, InvalidToken, NonExistentUser
 )
-from app.docs import user_required, either
-from app.environment import settings
+from app.config.docs import user_required, either
+from app.config.environment import settings
 import json
 
 

@@ -9,11 +9,11 @@ from app.api.telemetry.services import (
 )
 from app.api.telemetry.utils import active_users_distribution
 from app.api.telemetry.schemas import Distribution, NumericalTelemetry
-from app.database import get_async_db
+from app.config.database import get_async_db
 from loguru import logger
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.docs import admin_required, privilege_required
+from app.config.docs import admin_required, privilege_required
 
 
 telemetry_router = APIRouter()

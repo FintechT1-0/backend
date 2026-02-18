@@ -7,17 +7,17 @@ from app.api.courses.schemas import (
 from app.api.auth.services import (
     get_admin, get_user, get_optional_user
 )
-from app.database import get_async_db
+from app.config.database import get_async_db
 from app.api.courses.services import (
     create_course, delete_course, patch_course,
     try_get_course, filter_courses
 )
 from app.api.auth.schemas import CurrentUser
-from app.models import Course
+from app.config.models import Course
 from app.api.courses.utils import get_course_by_id
 from app.api.courses.errors import InsufficientRights, InsufficientFilterRights
 from typing import Optional, List
-from app.docs import admin_required, user_required, privilege_required
+from app.config.docs import admin_required, user_required, privilege_required
 from loguru import logger
 
 

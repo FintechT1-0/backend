@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.insights.schemas import NewsItem
 from app.api.auth.services import get_user, get_optional_user
-from app.database import get_async_db
+from app.config.database import get_async_db
 from app.api.auth.schemas import CurrentUser
 from typing import List, Optional
 from app.api.insights.services import get_filtered_articles
-from app.docs import user_required
+from app.config.docs import user_required
 
 
 insights_router = APIRouter()

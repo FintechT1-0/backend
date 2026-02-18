@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 from app.api.auth.errors import ExpiredToken, InvalidToken
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from app.models import User
-from app.environment import settings
+from app.config.models import User
+from app.config.environment import settings
 from loguru import logger
 import jwt
 

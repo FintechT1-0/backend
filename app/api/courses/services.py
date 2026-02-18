@@ -4,7 +4,7 @@ from app.api.courses.schemas import (
     CourseCreate, CourseUpdate, CourseView,
     PaginationInfo, CourseId, CourseFilter
 )
-from app.models import Course
+from app.config.models import Course
 from datetime import datetime
 from app.api.auth.schemas import CurrentUser
 from app.api.courses.errors import InsufficientRights, InsufficientFilterRights

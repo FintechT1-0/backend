@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.models import Article
+from app.config.models import Article
 
 
 async def get_filtered_articles(db: AsyncSession, lang: str) -> list[Article]:
