@@ -103,7 +103,6 @@ async def get_multiple_courses(
 ) -> PaginationInfo:
     """
     Retrieves multiple courses with filters and pagination.
-    `tags` should be a comma-separated string.
 
     To send an array of query parameters, use following syntax:
     http://127.0.0.1:8000/courses/?tags=AI for Fintech&tags=Fintech, Digital Finance %26 Virtual Assets

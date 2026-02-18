@@ -9,6 +9,7 @@ from datetime import datetime
 from app.api.auth.schemas import CurrentUser
 from app.api.courses.errors import InsufficientRights, InsufficientFilterRights
 from app.api.courses.utils import build_course_filters
+from app.shared.utils import paginate
 from typing import Optional, List
 
 
@@ -47,28 +48,29 @@ def try_get_course(course: Course, current_user: CurrentUser) -> CourseView:
 async def filter_courses(
     tags: Optional[List[str]],
     parameters: CourseFilter,
-    db: AsyncSession, 
+    db: AsyncSession,
     current_user: Optional[CurrentUser],
 ) -> PaginationInfo:
-    if (current_user is None or current_user.role != "admin") and parameters.isPublished != None:
+
+    if (current_user is None or current_user.role != "admin") and parameters.isPublished is not None:
         raise InsufficientFilterRights
 
     filters = build_course_filters(tags, parameters)
 
-    query = select(Course).filter(*filters)
+    base_query = select(Course).filter(*filters)
 
-    total_courses_result = await db.execute(query)
-    total_courses = len(total_courses_result.scalars().all())
-    total_pages = (total_courses + parameters.page_size - 1) // parameters.page_size
-
-    query = query.offset((parameters.page - 1) * parameters.page_size).limit(parameters.page_size)
-    result = await db.execute(query)
-    courses = result.scalars().all()
+    courses, total_courses, total_pages = await paginate(
+        db=db,
+        base_query=base_query,
+        page=parameters.page,
+        page_size=parameters.page_size,
+    )
 
     return PaginationInfo(
         courses=[CourseView.from_orm(course) for course in courses],
         current_page=parameters.page,
         page_size=len(courses),
         total_courses=total_courses,
-        total_pages=total_pages
+        total_pages=total_pages,
     )
+
